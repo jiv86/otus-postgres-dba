@@ -57,3 +57,139 @@ To generate this message, Docker took the following steps:
 To try something more ambitious, you can run an Ubuntu container with:
  $ docker run -it ubuntu bash
 ```
+## Запуск контейнера с PostgreSQL
+
+Создадим директорию для PostgreSQL в контейнере:
+```bash
+dimon@pg-stand-01:~$ sudo mkdir /var/lib/postgresql15-docker
+dimon@pg-stand-01:~$ ls -la /var/lib/postgres*
+/var/lib/postgres15-docker:
+total 8
+drwxr-xr-x  2 root root 4096 Oct 13 14:40 .
+drwxr-xr-x 49 root root 4096 Oct 13 14:40 ..
+
+/var/lib/postgresql:
+total 20
+drwxr-xr-x  3 postgres postgres 4096 Aug 20 19:51 .
+drwxr-xr-x 49 root     root     4096 Oct 13 14:40 ..
+drwxr-xr-x  3 postgres postgres 4096 Aug 19 10:56 15
+-rw-------  1 postgres postgres   31 Aug 20 19:51 .lesshst
+-rw-------  1 postgres postgres  561 Oct 13 13:36 .psql_history
+```
+**Создадим виртуальную сеть postgres-net для контейнеров**
+``` bash
+dimon@pg-stand-01:~$ sudo docker network create postgres-net
+444dbb75c686e6dc39c6aa645e8918e32929e138107ebd119fd7c0d34dd25b14
+```
+**Запустим контейнер с сервером PostgreSQL 15**
+``` bash
+dimon@pg-stand-01:~$ sudo docker run --name postgres-15 --network postgres-net -e POSTGRES_PASSWORD=postgres -p 5435:5432 -v /var/lib/postgresql15-docker:/var/lib/postgresql/data -d postgres:15
+
+Unable to find image 'postgres:15' locally
+15: Pulling from library/postgres
+302e3ee49805: Pull complete
+5ccfe0637e34: Pull complete
+2a43a85981e6: Pull complete
+1c01c9d4aa53: Pull complete
+40ebb982f2b6: Pull complete
+ff52dc352d37: Pull complete
+f0e0cd0717bd: Pull complete
+57434856e21c: Pull complete
+bd0553b56125: Pull complete
+ee25c60ee352: Pull complete
+1f2d3a46d356: Pull complete
+e64a076b3fdd: Pull complete
+dfe36a78fbfa: Pull complete
+be71cbe065b5: Pull complete
+Digest: sha256:8e97b8526ed19304b144f7478bc9201646acf0723cdc100e9bb7495712cbadb6
+Status: Downloaded newer image for postgres:15
+df34ee61d0df4fcb0187a074eb48e57ab3401ad125d5504d0cd3022473cf27de
+```
+**Описание параметров**
+* -p 5435:5432 порт 5435 хоста (так как порт 5432 на хосте занят предыдущей инсталяцией PostgreSQL) связываем с портом 5432 внутри контейнера.
+* -v локальная директория `/var/lib/postgresql15-docker` монтируется внутрь контейнера в директорию `/var/lib/postgresql/data`
+* --name - имя контейнера
+* --network postgres-net - выбираем для запускаемого контейнера ранее созданную виртуальную сеть
+
+## Подключение к кластеру PG внутри контейнера
+`dimon@pg-stand-01:~$ sudo docker run --network postgres-net --name pg15-client --rm -it postgres:15 psql -h postgres-15 -U postgres`
+**Описание параметров**
+* --network postgres-net - выбираем для запускаемого контейнера ранее созданную виртуальную сеть
+* --name pg15-client - имя контейнера
+* --rm - автоматически удалять контейнер и связанные с ним тома при выходе из него
+*  -it - интерактивное подключение контейнеру с выводом TTY, далее идут команды передоваемые в консоль контейнера
+  а именно psql c параметрами подключения к Postgres
+
+Подключение после создания контейнера:
+``` bash
+dimon@pg-stand-01:~$ sudo docker exec -it pg15-client bash
+root@896632d58611:/# psql -h postgres-15 -U postgres
+Password for user postgres:
+psql (15.8 (Debian 15.8-1.pgdg120+1))
+Type "help" for help.
+
+postgres=# \conninfo
+You are connected to database "postgres" as user "postgres" on host "postgres-15" (address "172.18.0.2") at port "5432".
+
+```
+Создание тестовой базы в psql, наполнение ее тестовыми данными
+
+``` sql
+postgres=# create database otus_db_in_docker;
+\c otus_db_in_docker;
+
+postgres=# create database otus_db_in_docker;
+CREATE DATABASE
+postgres=# CREATE TABLE users (
+  id SERIAL PRIMARY KEY,
+  username VARCHAR(50) NOT NULL,
+  password VARCHAR(50) NOT NULL,
+  email VARCHAR(50) UNIQUE  NOT NULL,
+  created_at DATE DEFAULT CURRENT_TIMESTAMP
+);
+CREATE TABLE
+postgres=# DROP TABLE IF EXISTS users, posts;
+NOTICE:  table "posts" does not exist, skipping
+DROP TABLE
+postgres=# CREATE TABLE users (
+  id SERIAL PRIMARY KEY,
+  username VARCHAR(50) NOT NULL,
+  password VARCHAR(50) NOT NULL,
+  email VARCHAR(50) UNIQUE  NOT NULL,
+  created_at DATE DEFAULT CURRENT_TIMESTAMP
+);
+
+CREATE TABLE posts (
+  id SERIAL PRIMARY KEY,
+  title VARCHAR(100)  NOT NULL,
+  body TEXT NOT NULL,
+  user_id INT NOT NULL,
+  FOREIGN KEY (user_id) REFERENCES users(id),
+  created_at DATE DEFAULT CURRENT_TIMESTAMP
+);
+
+
+INSERT INTO users (username, password, email ) VALUES
+ ('John Doe', 'password', 'John@Doe.com'),
+  ('Jane Doe', 'password', 'Jane Doe'),
+  ('John Smith', 'password', 'John@Smith.com');
+
+INSERT INTO posts (title, body, user_id) VALUES
+ ('Post 1', 'This is the first post', 1),
+  ('Post 2', 'This is the second post', 2),
+   ('Post 3', 'This is the third post', 3);
+CREATE TABLE
+
+CREATE TABLE
+INSERT 0 3
+INSERT 0 3
+postgres=# SELECT * from users;
+ id |  username  | password |     email      | created_at
+
+----+------------+----------+----------------+------------
+  1 | John Doe   | password | John@Doe.com   | 2024-10-13
+  2 | Jane Doe   | password | Jane Doe       | 2024-10-13
+  3 | John Smith | password | John@Smith.com | 2024-10-13
+(3 rows)
+```
+**Подключаемся через DBeaver с хостовой машины, работает**
