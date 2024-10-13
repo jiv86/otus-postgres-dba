@@ -5,6 +5,7 @@
 Использум ВМ из [предыдущего домашнего задания](../2-lesson/2-lesson.md#подготовка-виртуальной-машины-и-установка-субд).
 
 Устанавливаем DockerEngine по [инструкции по установке из apt-репозитория](https://docs.docker.com/engine/install/ubuntu/#install-using-the-repository)
+**Add Docker's official GPG key:**
 ``` shell
 
 dimon@pg-stand-01:~$sudo apt-get update
