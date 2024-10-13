@@ -13,3 +13,12 @@ dimon@pg-stand-01:~$sudo install -m 0755 -d /etc/apt/keyrings
 dimon@pg-stand-01:~$sudo curl -fsSL https://download.docker.com/linux/ubuntu/gpg -o /etc/apt/keyrings/docker.asc
 dimon@pg-stand-01:~$sudo chmod a+r /etc/apt/keyrings/docker.asc
 ```
+
+Добавляем apt-репозитоий с пакетами докер
+``` bash
+echo \
+  "deb [arch=$(dpkg --print-architecture) signed-by=/etc/apt/keyrings/docker.asc] https://download.docker.com/linux/ubuntu \
+  $(. /etc/os-release && echo "$VERSION_CODENAME") stable" | \
+  sudo tee /etc/apt/sources.list.d/docker.list > /dev/null
+sudo apt-get update
+```
