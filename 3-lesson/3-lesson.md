@@ -193,4 +193,4 @@ postgres=# SELECT * from users;
 (3 rows)
 ```
 **Подключаемся через DBeaver с хостовой машины, работает**
-<img src="image/dbeaver-docker.png">Успешно подключени к СУБД внутри контейнера "postgres-15"</img>
+<img src="image/dbeaver-docker.png">подключен к СУБД внутри контейнера "postgres-15"</img>
