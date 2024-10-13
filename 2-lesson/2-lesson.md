@@ -61,7 +61,7 @@ dimon@pg-stand-01:~$ sudo service postgresql restart
 
 5. Подключаемся к СУБД через DBeaver
 
-<img src="image/dbeaver.png">DBeaver подключенный к СУБД</img>
+<img src="/image/Dbeaver.png">DBeaver подключенный к СУБД</img>
 
 ### Подключение к БД, инициализация данных
 
