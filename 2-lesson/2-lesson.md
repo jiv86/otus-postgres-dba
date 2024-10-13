@@ -24,22 +24,15 @@ dimon@pg-stand-01:~$ sudo apt-get install postgresql-15 postgresql-contrib
 
 1. Разрешить PostgreSQL слушать подключения с любых адресов, а не только с `localhost`. Это настраивается в файле конфигурации `postgresql.conf`:
 ```
-dimon@pg-stand-01:~$ sudo nano -w /etc/postgresql/14/main/postgresql.conf
+dimon@pg-stand-01:~$ sudo nano /etc/postgresql/15/main/postgresql.conf
 ```
 ```
-# ...
-
 #------------------------------------------------------------------------------
 # CONNECTIONS AND AUTHENTICATION
 #------------------------------------------------------------------------------
-
 # - Connection Settings -
-
-listen_addresses = '*'                  # Указывает, с каких адресов PostgreSQL будет слушать подключения.
-                                        # По умолчанию строка закомментирована, что аналогично значению 'localhost';
-                                        # я её раскомментировал и сохранил изменения.
-
-# ...
+listen_addresses = '*'                  # устанавливаем парметр listen_addreses = '*' для возможности подключения извне
+                                 
 ```
 
 2. По умолчанию пользователю `postgres` разрешено подключаться к СУБД только локально - я изменил это, чтобы иметь возможность подключаться отовсюду. Это настраивается в файле конфигурации `pg_hba.conf`:
