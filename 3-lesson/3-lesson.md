@@ -140,17 +140,7 @@ postgres=# create database otus_db_in_docker;
 
 postgres=# create database otus_db_in_docker;
 CREATE DATABASE
-postgres=# CREATE TABLE users (
-  id SERIAL PRIMARY KEY,
-  username VARCHAR(50) NOT NULL,
-  password VARCHAR(50) NOT NULL,
-  email VARCHAR(50) UNIQUE  NOT NULL,
-  created_at DATE DEFAULT CURRENT_TIMESTAMP
-);
-CREATE TABLE
-postgres=# DROP TABLE IF EXISTS users, posts;
-NOTICE:  table "posts" does not exist, skipping
-DROP TABLE
+postgres=#\c otus_db_in_docker;
 postgres=# CREATE TABLE users (
   id SERIAL PRIMARY KEY,
   username VARCHAR(50) NOT NULL,
@@ -194,3 +184,103 @@ postgres=# SELECT * from users;
 ```
 **Подключаемся через DBeaver с другого компьютера, работает**
 <img src="image/dbeaver-docker.png">подключен к СУБД внутри контейнера "postgres-15"</img>
+
+## Удаление контейнера с СУБД, сохраняя данные кластера PostgreSQL 15
+Смотрим что дата-директория кластера в контейнера сохранилась в   `/var/lib/postgresql15-docker` на хостовой машине
+``` bash
+dimon@pg-stand-01:~$ sudo ls -la /var/lib/postgresql15-docker
+total 136
+drwx------ 19  999 root             4096 Oct 13 14:53 .
+drwxr-xr-x 50 root root             4096 Oct 13 14:53 ..
+drwx------  6  999 systemd-journal  4096 Oct 13 16:09 base
+drwx------  2  999 systemd-journal  4096 Oct 13 14:55 global
+drwx------  2  999 systemd-journal  4096 Oct 13 14:53 pg_commit_ts
+drwx------  2  999 systemd-journal  4096 Oct 13 14:53 pg_dynshmem
+-rw-------  1  999 systemd-journal  4821 Oct 13 14:53 pg_hba.conf
+-rw-------  1  999 systemd-journal  1636 Oct 13 14:53 pg_ident.conf
+drwx------  4  999 systemd-journal  4096 Oct 13 16:28 pg_logical
+drwx------  4  999 systemd-journal  4096 Oct 13 14:53 pg_multixact
+drwx------  2  999 systemd-journal  4096 Oct 13 14:53 pg_notify
+drwx------  2  999 systemd-journal  4096 Oct 13 14:53 pg_replslot
+drwx------  2  999 systemd-journal  4096 Oct 13 14:53 pg_serial
+drwx------  2  999 systemd-journal  4096 Oct 13 14:53 pg_snapshots
+drwx------  2  999 systemd-journal  4096 Oct 13 14:53 pg_stat
+drwx------  2  999 systemd-journal  4096 Oct 13 14:53 pg_stat_tmp
+drwx------  2  999 systemd-journal  4096 Oct 13 14:53 pg_subtrans
+drwx------  2  999 systemd-journal  4096 Oct 13 14:53 pg_tblspc
+drwx------  2  999 systemd-journal  4096 Oct 13 14:53 pg_twophase
+-rw-------  1  999 systemd-journal     3 Oct 13 14:53 PG_VERSION
+drwx------  3  999 systemd-journal  4096 Oct 13 14:53 pg_wal
+drwx------  2  999 systemd-journal  4096 Oct 13 14:53 pg_xact
+-rw-------  1  999 systemd-journal    88 Oct 13 14:53 postgresql.auto.conf
+-rw-------  1  999 systemd-journal 29517 Oct 13 14:53 postgresql.conf
+-rw-------  1  999 systemd-journal    36 Oct 13 14:53 postmaster.opts
+-rw-------  1  999 systemd-journal    94 Oct 13 14:53 postmaster.pid
+```
+
+Пробуем удалить контейнер с сервером PostgreSQL 15
+
+``` bash
+dimon@pg-stand-01:~$sudo docker stop postgres-15
+postgres-15
+dimon@pg-stand-01:~$sudo docker rm postgres-15
+postgres-15
+```
+Проверяем с хост-машины подключение, чтобы убедится что оно не доступно: 
+``` bash
+dimon@pg-stand-01:~$ psql -h localhost -p 5435 -U postgres
+psql: error: connection to server at "localhost" (127.0.0.1), port 5435 failed: Connection refused
+        Is the server running on that host and accepting TCP/IP connections?
+```
+Итак, контейнер удален и не доступен к подключениям.
+Пересоздаем его с теми же параметрами:
+
+``` bash
+dimon@pg-stand-01:~$ sudo docker run --name postgres-15 --network postgres-net -e POSTGRES_PASSWORD=postgres -p 5435:5432 -v /var/lib/postgresql15-docker:/var/lib/postgresql/data -d postgres:15
+e79e51e0ffd487755ec087bcbf0e40869e5b22fba1ce225d2f4007ef0ad011fd
+```
+Пробуем подключится с хостовой машины
+
+``` bash
+dimon@pg-stand-01:~$ psql -h localhost -p 5435 -U postgres
+Password for user postgres:
+psql (15.8 (Ubuntu 15.8-1.pgdg24.04+1))
+Type "help" for help.
+
+postgres=# \l
+                                                    List of databases
+       Name        |  Owner   | Encoding |  Collate   |   Ctype    | ICU Locale | Locale Provider |   Access privileges
+-------------------+----------+----------+------------+------------+------------+-----------------+-----------------------
+ otus_db_in_docker | postgres | UTF8     | en_US.utf8 | en_US.utf8 |            | libc            |
+ postgres          | postgres | UTF8     | en_US.utf8 | en_US.utf8 |            | libc            |
+ template0         | postgres | UTF8     | en_US.utf8 | en_US.utf8 |            | libc            | =c/postgres          +
+                   |          |          |            |            |            |                 | postgres=CTc/postgres
+ template1         | postgres | UTF8     | en_US.utf8 | en_US.utf8 |            | libc            | =c/postgres          +
+                   |          |          |            |            |            |                 | postgres=CTc/postgres
+(4 rows)
+
+postgres=# \c otus_db_in_docker
+You are now connected to database "otus_db_in_docker" as user "postgres".
+otus_db_in_docker=# \d
+              List of relations
+ Schema |     Name     |   Type   |  Owner
+--------+--------------+----------+----------
+ public | posts        | table    | postgres
+ public | posts_id_seq | sequence | postgres
+ public | users        | table    | postgres
+ public | users_id_seq | sequence | postgres
+(4 rows)
+
+otus_db_in_docker=# select * from users;
+ id |  username  | password |     email      | created_at
+----+------------+----------+----------------+------------
+  1 | John Doe   | password | John@Doe.com   | 2024-10-13
+  2 | Jane Doe   | password | Jane Doe       | 2024-10-13
+  3 | John Smith | password | John@Smith.com | 2024-10-13
+(3 rows)
+```
+**УСПЕХ!!!**
+
+Пробуем подключится с другого компьютера при помощи DBeaver
+<img src="image/dbeaver-after-delete.png">подключен к СУБД внутри контейнера "postgres-15"</img>
+
