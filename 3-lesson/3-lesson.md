@@ -284,3 +284,5 @@ otus_db_in_docker=# select * from users;
 Пробуем подключится с другого компьютера при помощи DBeaver
 <img src="image/dbeaver-after-delete.png">подключен к СУБД внутри контейнера "postgres-15"</img>
 
+Вывод: Данные кластера успешно сохранились, так как хранились не внутри контейнера а на хостовой машине в папке `/var/lib/postgresql15-docker` примонтированной в контейнер в дата-директорию кластера Postgres `/var/lib/postgresql/data`
+
