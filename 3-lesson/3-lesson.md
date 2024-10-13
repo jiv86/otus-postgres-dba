@@ -192,5 +192,5 @@ postgres=# SELECT * from users;
   3 | John Smith | password | John@Smith.com | 2024-10-13
 (3 rows)
 ```
-**Подключаемся через DBeaver с хостовой машины, работает**
+**Подключаемся через DBeaver с другого компьютера, работает**
 <img src="image/dbeaver-docker.png">подключен к СУБД внутри контейнера "postgres-15"</img>
