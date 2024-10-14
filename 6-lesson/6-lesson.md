@@ -269,10 +269,11 @@ vdb1  ext4     1.0   datapartition 26c6e23f-c1bd-4947-97ae-1c68aabf8806
 └─vdb
 ```
 Монтируем раздел в /mnt/data 
-случай с временныйм монтированием `sudo mount -o defaults /dev/vdb1 /mnt/data`
+Случай с временным монтированием `sudo mount -o defaults /dev/vdb1 /mnt/data`
 
 ```
 sudo nano /etc/fstab
+
 # /etc/fstab: static file system information.
 #
 # Use 'blkid' to print the universally unique identifier for a
@@ -283,6 +284,9 @@ sudo nano /etc/fstab
 # / was on /dev/vda2 during curtin installation
 /dev/disk/by-uuid/ed465c6e-049a-41c6-8e0b-c8da348a3577 / ext4 defaults 0 1
 /dev/vdb1 /mnt/data ext4 defaults 0 2
+
+
+
 ```
 > /mnt/data is the path where the disk is being mounted.
 > 
@@ -292,3 +296,101 @@ sudo nano /etc/fstab
 > 
 > 0 2 signifies that the filesystem should be validated by the local machine in case of errors, but as a 2nd priority, after your root volume.
 
+**Перезагружаемся `sudo reboot`, после перезапуска  монтирование раздела продолжает работать**
+
+nenar@otus-db-pg-vm-01:~$\
+df -h\
+Filesystem      Size  Used Avail Use% Mounted on\
+tmpfs           197M  1.2M  196M   1% /run \
+/dev/vda2        20G  4.5G   15G  24% / \
+tmpfs           982M  1.1M  981M   1% /dev/shm \
+tmpfs           5.0M     0  5.0M   0% /run/lock\
+**/dev/vdb1       9.8G   24K  9.3G   1% /mnt/data**\
+tmpfs           197M  4.0K  197M   1% /run/user/1000\
+
+### Переносим дата-дерикторию инстанса Postgres 15 на подключенный раздел
+**останавливаем инстанс Postgres 15**
+``` bash
+sudo pg_ctlcluster 15 main stop
+pg_lsclusters
+Ver Cluster Port Status Owner    Data directory              Log file
+15  main    5432 down   postgres /var/lib/postgresql/15/main /var/log/postgresql/postgresql-15-main.log
+```
+**Назначаем права на /mnt/data для пользователя postgres ОС**
+``` bash
+nenar@otus-db-pg-vm-01:~$ sudo chown -R postgres:postgres /mnt/data/
+nenar@otus-db-pg-vm-01:~$ sudo chmod -R 700 /mnt/data/
+```
+**Перенесём дата-директорию кластера и попробуем его запустить:**
+
+``` bash
+nenar@otus-db-pg-vm-01:~$ sudo mv /var/lib/postgresql/15 /mnt/data
+nenar@otus-db-pg-vm-01:~$ sudo ls -la /mnt/data
+total 28
+drwx------ 4 postgres postgres  4096 Oct 14 14:20 .
+drwxr-xr-x 3 root     root      4096 Oct 14 10:11 ..
+drwxr-xr-x 3 postgres postgres  4096 Sep 16 06:22 15
+drwx------ 2 postgres postgres 16384 Oct 14 09:59 lost+found
+nenar@otus-db-pg-vm-01:~$ sudo pg_ctlcluster 15 main start
+Error: /var/lib/postgresql/15/main is not accessible or does not exist
+
+```
+___Кластер ожидаемо не запустился по понятной причине -- нет файлов в указанной в конфигурации дата-директории___
+___Чтобы исправить ситуацию меняем в файле `/etc/postgresql/15/main/postgresql.conf` параметр data_directory на `/mnt/data/15/main`___
+
+**Снова запускаем кластер:**
+``` bash
+nenar@otus-db-pg-vm-01:~$ sudo pg_ctlcluster 15 main start
+nenar@otus-db-pg-vm-01:~$ pg_lsclusters
+Ver Cluster Port Status Owner     Data directory    Log file
+15  main    5432 online <unknown> /mnt/data/15/main /var/log/postgresql/postgresql-15-main.log
+
+```
+***УСПЕХ !!!***
+**Проверяем наличие данных в БД через psql**
+
+``` bash
+nenar@otus-db-pg-vm-01:~$ sudo -u postgres psql
+psql (15.8 (Ubuntu 15.8-1.pgdg22.04+1))
+Type "help" for help.
+postgres=#
+postgres=# \l
+                                                   List of databases
+     Name      |  Owner   | Encoding |   Collate   |    Ctype    | ICU Locale | Locale Provider |   Access privileges
+---------------+----------+----------+-------------+-------------+------------+-----------------+-----------------------
+ otus_physical | postgres | UTF8     | en_US.UTF-8 | en_US.UTF-8 |            | libc            |
+ postgres      | postgres | UTF8     | en_US.UTF-8 | en_US.UTF-8 |            | libc            |
+ template0     | postgres | UTF8     | en_US.UTF-8 | en_US.UTF-8 |            | libc            | =c/postgres          +
+               |          |          |             |             |            |                 | postgres=CTc/postgres
+ template1     | postgres | UTF8     | en_US.UTF-8 | en_US.UTF-8 |            | libc            | =c/postgres          +
+               |          |          |             |             |            |                 | postgres=CTc/postgres
+(4 rows)
+postgres=# \c otus_physical
+You are now connected to database "otus_physical" as user "postgres".
+otus_physical=#
+
+otus_physical=# \d
+                  List of relations
+ Schema |         Name         |   Type   |  Owner
+--------+----------------------+----------+----------
+ public | search_result        | table    | postgres
+ public | search_result_id_seq | sequence | postgres
+ public | study                | table    | postgres
+(3 rows)
+
+postgres=# select * from search_result;
+ id  |               name               |   study_id
+-----+----------------------------------+--------------
+   1 | abf10e36ff5c41964511b2485c287f00 | OBESITY
+   2 | aa2bdb0a35b47288472e5f60ad045ef8 | OBESITY
+   3 | 6ee3b62c45b6d1985773ec89d48303b4 | OBESITY
+   4 | fd8958b5aa353ede8743095ed9c37566 | OBESITY
+   5 | 6df101594936e5b1a7623061710fc955 | OBESITY
+   6 | b2da7356965ac4cb1e9826a40d054a3b | OBESITY
+   7 | 1a15eea91cb4df08f17f416ef9bba3eb | OBESITY
+   8 | 6000bf159917c79719305f5081f1a91f | OBESITY
+   9 | c30333229ffe7eca59c06997b03e920e | OBESITY
+  10 | 981a24a1faef039d62f50484115ed08f | OBESITY
+ETC ...
+```
+___Как видно -- все данные на месте___
