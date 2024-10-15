@@ -209,7 +209,7 @@ vdb    252:16   0    10G  0 disk
 sudo apt update
 sudo apt install parted
 ```
-**Ищем неразмеченное устройство в выводе Gparted**
+**Ищем неразмеченное устройство в выводе Parted**
 
 ``` bash
 nenar@otus-db-pg-vm-01:~$ sudo parted -l
@@ -395,3 +395,26 @@ ETC ...
 ```
 ___Как видно -- все данные на месте___
 ### Задание со звёздочкой: подключение дата-директории кластера на другой ВМ с Postgres 15 ###
+Создаем новую ВМ с именем `otus-db-pg-vm-02` в Яндекс Клауд. Параметры: Ubuntu24.04, 2vCPU IntelIceLake, 2 Гб RAM shared core -гарантированная доля vCPU 50%, HDD 20 Гб
+
+Cтавим на нее Postgres 15
+``` bash
+nenar@otus-db-pg-vm-02:~$ sudo apt-get update
+nenar@otus-db-pg-vm-02:~$ sudo apt-get upgrade
+nenar@otus-db-pg-vm-02:~$ sudo apt install dirmngr ca-certificates software-properties-common apt-transport-https lsb-release curl -y
+nenar@otus-db-pg-vm-02:~$ curl -fSsL https://www.postgresql.org/media/keys/ACCC4CF8.asc | gpg --dearmor | sudo tee /usr/share/keyrings/postgresql.gpg > /dev/null
+nenar@otus-db-pg-vm-02:~$ echo deb [arch=amd64,arm64,ppc64el signed-by=/usr/share/keyrings/postgresql.gpg] http://apt.postgresql.org/pub/repos/apt/ $(lsb_release -cs)-pgdg main | sudo tee /etc/apt/sources.list.d/postgresql.list
+nenar@otus-db-pg-vm-02:~$ sudo apt update
+nenar@otus-db-pg-vm-02:~$ sudo apt install postgresql-client-15 postgresql-15
+nenar@otus-db-pg-vm-02:~$ pg_lsclusters
+Ver Cluster Port Status Owner    Data directory              Log file
+15  main    5432 online postgres /var/lib/postgresql/15/main /var/log/postgresql/postgresql-15-main.log
+
+```
+
+Ноа первой ВМ останавливаем инстанс Postgres 15 и отмонтируем диск с дата-директорией
+``` bash
+nenar@otus-db-pg-vm-01:~$ sudo pg_ctlcluster 15 main stop
+nenar@otus-db-pg-vm-01:~$ sudo umount /dev/vdb1
+```
+Далее через GUI Яндекс Клауда отключаем диск от первой ВМ
