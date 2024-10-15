@@ -52,3 +52,36 @@ done in 1.19 s (drop tables 0.00 s, create tables 0.02 s, client-side generate 0
 postgres@otus-dba-vaccum:~$
 
 ```
+
+## Запускаем тест на БД testdb_vacuum, имитация 8 клиентов, вывод показателей кажде 6 секунд, продолжительность бэнчмарка 60 секунд, запуск от имени юзера postgres
+
+
+``` bash
+nenar@otus-dba-vaccum:~$ pgbench -c8 -P 6 -T 60 -U postgres testdb_vacuum
+Password:
+pgbench (15.8 (Ubuntu 15.8-1.pgdg24.04+1))
+starting vacuum...end.
+progress: 6.0 s, 573.0 tps, lat 13.789 ms stddev 12.026, 0 failed
+progress: 12.0 s, 638.5 tps, lat 12.527 ms stddev 10.947, 0 failed
+progress: 18.0 s, 383.2 tps, lat 20.835 ms stddev 20.208, 0 failed
+progress: 24.0 s, 575.3 tps, lat 13.915 ms stddev 12.819, 0 failed
+progress: 30.0 s, 581.0 tps, lat 13.739 ms stddev 14.828, 0 failed
+progress: 36.0 s, 684.8 tps, lat 11.718 ms stddev 9.528, 0 failed
+progress: 42.0 s, 735.7 tps, lat 10.878 ms stddev 17.540, 0 failed
+progress: 48.0 s, 420.0 tps, lat 19.044 ms stddev 20.140, 0 failed
+progress: 54.0 s, 513.5 tps, lat 15.464 ms stddev 13.855, 0 failed
+progress: 60.0 s, 604.0 tps, lat 13.306 ms stddev 13.115, 0 failed
+transaction type: <builtin: TPC-B (sort of)>
+scaling factor: 1
+query mode: simple
+number of clients: 8
+number of threads: 1
+maximum number of tries: 1
+duration: 60 s
+number of transactions actually processed: 34262
+number of failed transactions: 0 (0.000%)
+latency average = 13.995 ms
+latency stddev = 14.750 ms
+initial connection time = 65.411 ms
+tps = 571.459137 (without initial connection time)
+```
