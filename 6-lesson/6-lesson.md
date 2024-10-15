@@ -419,3 +419,83 @@ nenar@otus-db-pg-vm-01:~$ sudo umount /dev/vdb1
 ```
 Далее через GUI Яндекс Клауда отключаем диск от первой ВМ
 <img src="image/yc-disk-unmount.png" alt="Unmoount disk from YandexCloud VM">
+
+
+Подключаем диск ко второй ВМ
+<img src="image/yc-disk-connect.png" alt="Connect disk from YandexCloud VM2">
+
+Примонтируем директорию и выдадим прав для postgres
+``` bash
+nenar@otus-db-pg-vm-02:~$ sudo mkdir /mnt/data
+nenar@otus-db-pg-vm-02:~$ sudo mount /dev/vdb1 /mnt/data
+nenar@otus-db-pg-vm-02:~$ sudo chown -R postgres:postgres /mnt/data
+nenar@otus-db-pg-vm-02:~$ sudo ls -la /mnt/data
+total 28
+drwx------ 4 postgres postgres  4096 Oct 14 14:20 .
+drwxr-xr-x 3 root     root      4096 Oct 15 13:04 ..
+drwxr-xr-x 3 postgres postgres  4096 Sep 16 06:22 15
+drwx------ 2 postgres postgres 16384 Oct 14 09:59 lost+found
+```
+
+Поменяем параметр data_directory в `/etc/postgresql/15/main/postgresql.conf` на  `/mnt/data/15/main` и перезапускаем инстанс Postgres 15
+
+``` bash
+nenar@otus-db-pg-vm-02:~$ sudo nano /etc/postgresql/15/main/postgresql.conf
+nenar@otus-db-pg-vm-02:~$ sudo pg_ctlcluster 15 main restart
+```
+
+Пробуем подключится к Postgres через psql
+``` bash
+nenar@otus-db-pg-vm-02:~$ sudo -u postgres psql
+WARNING:  database "postgres" has a collation version mismatch
+DETAIL:  The database was created using collation version 2.35, but the operating system provides version 2.39.
+HINT:  Rebuild all objects in this database that use the default collation and run ALTER DATABASE postgres REFRESH COLLATION VERSION, or build PostgreSQL with the right library version.
+psql (15.8 (Ubuntu 15.8-1.pgdg24.04+1))
+Type "help" for help.
+```
+
+**Как видим ругается на версию COLLATION, так как первая ВМ на Ubuntu 22.04 а вторая 24,04 и в них отличаются версии локали судя по описанию https://wiki.postgresql.org/wiki/Locale_data_change также между остановкой первой и 2ой ВМ прошло больше 2ух месяцев)))**
+
+Выполняем для всех баз `ALTER DATABASE postgres REFRESH COLLATION VERSION;` и пробуем делать выборку
+```
+postgres=# \l
+                                                   List of databases
+     Name      |  Owner   | Encoding |   Collate   |    Ctype    | ICU Locale | Locale Provider |   Access privileges
+---------------+----------+----------+-------------+-------------+------------+-----------------+-----------------------
+ otus_physical | postgres | UTF8     | en_US.UTF-8 | en_US.UTF-8 |            | libc            |
+ postgres      | postgres | UTF8     | en_US.UTF-8 | en_US.UTF-8 |            | libc            |
+ template0     | postgres | UTF8     | en_US.UTF-8 | en_US.UTF-8 |            | libc            | =c/postgres          +
+               |          |          |             |             |            |                 | postgres=CTc/postgres
+ template1     | postgres | UTF8     | en_US.UTF-8 | en_US.UTF-8 |            | libc            | =c/postgres          +
+               |          |          |             |             |            |                 | postgres=CTc/postgres
+(4 rows)
+
+postgres=# \c otus_physical
+You are now connected to database "otus_physical" as user "postgres"
+
+otus_physical=# \d
+                  List of relations
+ Schema |         Name         |   Type   |  Owner
+--------+----------------------+----------+----------
+ public | search_result        | table    | postgres
+ public | search_result_id_seq | sequence | postgres
+ public | study                | table    | postgres
+(3 rows)
+otus_physical=# select * from search_result;
+ id  |               name               |   study_id
+-----+----------------------------------+--------------
+   1 | abf10e36ff5c41964511b2485c287f00 | OBESITY
+   2 | aa2bdb0a35b47288472e5f60ad045ef8 | OBESITY
+   3 | 6ee3b62c45b6d1985773ec89d48303b4 | OBESITY
+   4 | fd8958b5aa353ede8743095ed9c37566 | OBESITY
+   5 | 6df101594936e5b1a7623061710fc955 | OBESITY
+   6 | b2da7356965ac4cb1e9826a40d054a3b | OBESITY
+   7 | 1a15eea91cb4df08f17f416ef9bba3eb | OBESITY
+   8 | 6000bf159917c79719305f5081f1a91f | OBESITY
+   9 | c30333229ffe7eca59c06997b03e920e | OBESITY
+  10 | 981a24a1faef039d62f50484115ed08f | OBESITY
+  11 | 566907891f8d8be8da58fc68c6ec376c | OBESITY
+  12 | 460edc97a95f426d090e3415aeadd6d5 | OBESITY
+
+```
+### Вывод - данные при переносе дата-директории инстанса Postgres сохраняются при использовании одной мажорной версии PG, важную роль играет операционная система и версия локали, от нее зависит порядок сортировки/COLLATION.
