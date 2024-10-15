@@ -1,6 +1,7 @@
 # Занятие 8. MVCC, vacuum и autovacuum. 
 ## Подготовка ВМ
 Создадим в Яндекс Клауде ВМ с требуемыми параметрами и именем `otus-dba-vacuum`
+SSD 15Гб, 4Гб RAM, 2vCPU 
 ## Установка Postgres 15
 
 ``` bash
@@ -85,3 +86,81 @@ latency stddev = 14.750 ms
 initial connection time = 65.411 ms
 tps = 571.459137 (without initial connection time)
 ```
+## Применение настроек из материалов к занятию
+* Предлагается установить следующие настройки относительно стандартных
+* сравним:
+
+| Название параметра             | Значение по умолчанию | Предлагаемое значение | 
+| ------------------------------ | --------------------- | --------------------- |
+| `max_connections`              | 100                   | 40                    |
+| `shared_buffers`               | 128MB                 | 1GB                   |
+| `effective_cache_size`         | 4GB                   | 3GB                   |
+| `maintenance_work_mem`         | 64MB                  | 512MB                 |
+| `checkpoint_completion_target` | 0.9                   | 0.9                   |
+| `wal_buffers`                  | 4MB                   | 16MB                  |
+| `default_statistics_target`    | 100                   | 500                   |
+| `random_page_cost`             | 4                     | 4                     |
+| `effective_io_concurrency`     | 1                     | 2                     |
+| `work_mem`                     | 4096kB                | 6553kB                |
+| `min_wal_size`                 | 80MB                  | 4GB                   |
+| `max_wal_size`                 | 1GB                   | 16GB                  |
+
+* Применили рекомендованные параметры
+  Убеждаемся что они действительно применились
+  
+  ```
+  nenar@otus-dba-vaccum:~$ sudo -u postgres psql
+  postgres=# select name, setting, unit from pg_settings where name in ('max_connections', 'shared_buffers', 'effective_cache_size', 'maintenance_work_mem', 'checkpoint_completion_target', 'wal_buffers', 'default_statistics_target', 'random_page_cost', 'effective_io_concurrency', 'work_mem', 'min_wal_size', 'max_wal_size');
+             name             | setting | unit
+------------------------------+---------+------
+ checkpoint_completion_target | 0.9     |
+ default_statistics_target    | 500     |
+ effective_cache_size         | 393216  | 8kB
+ effective_io_concurrency     | 2       |
+ maintenance_work_mem         | 524288  | kB
+ max_connections              | 40      |
+ max_wal_size                 | 16384   | MB
+ min_wal_size                 | 4096    | MB
+ random_page_cost             | 4       |
+ shared_buffers               | 131072  | 8kB
+ wal_buffers                  | 2048    | 8kB
+ work_mem                     | 6553    | kB
+(12 rows)
+  ```
+* ПРИМЕНИЛИСЬ УСПЕШНО.
+
+  ## Запускем тест повторно после изменения настроек кластера
+
+ ``` bash
+nenar@otus-dba-vaccum:~$ pgbench -c8 -P 6 -T 60 -U postgres testdb_vacuum
+Password:
+pgbench (15.8 (Ubuntu 15.8-1.pgdg24.04+1))
+starting vacuum...end.
+progress: 6.0 s, 500.2 tps, lat 15.794 ms stddev 16.429, 0 failed
+progress: 12.0 s, 487.3 tps, lat 16.395 ms stddev 15.266, 0 failed
+progress: 18.0 s, 667.2 tps, lat 12.004 ms stddev 11.976, 0 failed
+progress: 24.0 s, 472.0 tps, lat 16.926 ms stddev 14.482, 0 failed
+progress: 30.0 s, 578.0 tps, lat 13.847 ms stddev 11.090, 0 failed
+progress: 36.0 s, 445.8 tps, lat 17.949 ms stddev 15.927, 0 failed
+progress: 42.0 s, 541.2 tps, lat 14.763 ms stddev 15.596, 0 failed
+progress: 48.0 s, 688.7 tps, lat 11.625 ms stddev 11.202, 0 failed
+progress: 54.0 s, 653.0 tps, lat 12.237 ms stddev 10.426, 0 failed
+progress: 60.0 s, 748.2 tps, lat 10.703 ms stddev 8.981, 0 failed
+transaction type: <builtin: TPC-B (sort of)>
+scaling factor: 1
+query mode: simple
+number of clients: 8
+number of threads: 1
+maximum number of tries: 1
+duration: 60 s
+number of transactions actually processed: 34697
+number of failed transactions: 0 (0.000%)
+latency average = 13.820 ms
+latency stddev = 13.211 ms
+initial connection time = 69.056 ms
+tps = 578.687952 (without initial connection time)
+
+ ```
+* Результат теста: среднее значение TPS незначительно выросло, менее чем на 1%.
+  
+> ПРИМЕЧАНИЕ: Возможно тест должен был показать более яркое изменение производительности. Но результат такой.
