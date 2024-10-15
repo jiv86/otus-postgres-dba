@@ -418,3 +418,4 @@ nenar@otus-db-pg-vm-01:~$ sudo pg_ctlcluster 15 main stop
 nenar@otus-db-pg-vm-01:~$ sudo umount /dev/vdb1
 ```
 Далее через GUI Яндекс Клауда отключаем диск от первой ВМ
+<img src="image/yc-disk-unmount.png" alt="Unmoount disk from YandexCloud VM">
