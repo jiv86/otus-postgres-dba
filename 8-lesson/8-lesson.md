@@ -25,7 +25,7 @@ Type "help" for help.
 postgres=# create database testdb_vacuum;
 CREATE DATABASE
 ```
-## Устанавливаем пароь пользователю postgres СУБД
+## Устанавливаем пароль пользователю postgres СУБД
 
 ```
 nenar@otus-dba-vaccum:~$ sudo -u postgres psql
