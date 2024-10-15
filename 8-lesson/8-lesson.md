@@ -110,22 +110,23 @@ tps = 571.459137 (without initial connection time)
   
   ```
   nenar@otus-dba-vaccum:~$ sudo -u postgres psql
-  postgres=# select name, setting, unit from pg_settings where name in ('max_connections', 'shared_buffers', 'effective_cache_size', 'maintenance_work_mem', 'checkpoint_completion_target', 'wal_buffers', 'default_statistics_target', 'random_page_cost', 'effective_io_concurrency', 'work_mem', 'min_wal_size', 'max_wal_size');
+  postgres=# select name, setting, unit from pg_settings where name in ('max_connections', 'shared_buffers', 'effective_cache_size', 'maintenance_work_mem', 'checkpoint_completion_target', 
+  'wal_buffers', 'default_statistics_target', 'random_page_cost', 'effective_io_concurrency', 'work_mem', 'min_wal_size', 'max_wal_size');
              name             | setting | unit
-------------------------------+---------+------
- checkpoint_completion_target | 0.9     |
- default_statistics_target    | 500     |
- effective_cache_size         | 393216  | 8kB
- effective_io_concurrency     | 2       |
- maintenance_work_mem         | 524288  | kB
- max_connections              | 40      |
- max_wal_size                 | 16384   | MB
- min_wal_size                 | 4096    | MB
- random_page_cost             | 4       |
- shared_buffers               | 131072  | 8kB
- wal_buffers                  | 2048    | 8kB
- work_mem                     | 6553    | kB
-(12 rows)
+  ------------------------------+---------+------
+   checkpoint_completion_target | 0.9     |
+   default_statistics_target    | 500     |
+   effective_cache_size         | 393216  | 8kB
+   effective_io_concurrency     | 2       |
+   maintenance_work_mem         | 524288  | kB
+   max_connections              | 40      |
+   max_wal_size                 | 16384   | MB
+   min_wal_size                 | 4096    | MB
+   random_page_cost             | 4       |
+   shared_buffers               | 131072  | 8kB
+   wal_buffers                  | 2048    | 8kB
+   work_mem                     | 6553    | kB
+   (12 rows)
   ```
 * ПРИМЕНИЛИСЬ УСПЕШНО.
 
