@@ -291,6 +291,90 @@ tps = 2888.260440 (without initial connection time)
 >`wal_writer_delay` миллисекунд. Фактически, максимальная продолжительность окна риска составляет трёхкратное значение
 >`wal_writer_dela`y, потому что WAL writer разработан так, чтобы сразу сохранять целые страницы во время периодов занятости.
 
-### Создайте новый кластер с включенной контрольной суммой страниц. Создайте таблицу. Вставьте несколько значений. Выключите кластер. Измените пару байт в таблице. Включите кластер и сделайте выборку из таблицы. Что и почему произошло? как проигнорировать ошибку и продолжить работу?
+### Создайте новый кластер с включенной контрольной суммой страниц. Создайте таблицу. Вставьте несколько значений. Выключите кластер. Измените пару байт в таблице. Включите кластер и сделайте выборку из таблицы. 
 
 <img src="image/create-checksum-cluster.png">СОЗДАЕМ КЛАСТЕР СО ВКЛЮЧЕННЫМ CHECKSUM с названием "check"</img>
+Установим пароль пользователя postgres
+Создадим тестовую таблицу
+```
+postgres=# CREATE DATABASE demo1;
+CREATE DATABASE
+postgres=# \c demo1;
+You are now connected to database "demo1" as user "postgres".
+demo1=# CREATE TABLE students (id int, name text);
+CREATE TABLE
+demo1=# INSERT INTO students (id, name) VALUES (1, 'Gosha'), (2, 'Alesha'),(3,'Vasyok');
+INSERT 0 3
+demo1=# select * from students;
+ id |  name
+----+--------
+  1 | Gosha
+  2 | Alesha
+  3 | Vasyok
+(3 rows)
+```
+Смотрим путь до созданной таблицы
+```
+demo1=# SELECT pg_relation_filepath('students');
+ pg_relation_filepath
+----------------------
+ base/16388/16389
+(1 row)
+```
+Файл действительно лежит по этому пути
+```
+nenar@otus-dba-vaccum:~$ sudo -su postgres
+postgres@otus-dba-vaccum:/home/nenar$ ls -la /var/lib/postgresql/15/check/base/16388/16389*
+-rw------- 1 postgres postgres 8192 Oct 16 13:31 /var/lib/postgresql/15/check/base/16388/16389
+postgres@otus-dba-vaccum:/home/nenar$
+```
+Останавливаем кластер `sudo pg_ctlcluster 15 check stop`
+заменяем в файле `/var/lib/postgresql/15/check/base/16388/16389` 2 байта 
+```
+nenar@otus-dba-vaccum:~$ sudo pg_ctlcluster 15 check stop
+nenar@otus-dba-vaccum:~$ sudo dd if=/dev/urandom of=/var/lib/postgresql/15/check/base/16388/16389 oflag=dsync conv=notrunc bs=2 count=1
+1+0 records in
+1+0 records out
+2 bytes copied, 0.0025273 s, 0.8 kB/s
+```
+Запускаем кластер `sudo pg_ctlcluster 15 check start`
+Он успешнозапустился.
+Пробуем сделать выборку из таблицы `students` базы `demo1`
+Получае ошибку
+```
+nenar@otus-dba-vaccum:~$ sudo -u postgres psql -p 5433
+postgres=# \c demo1
+You are now connected to database "demo1" as user "postgres".
+demo1=# select * from students;
+
+WARNING:  page verification failed, calculated checksum 8952 but expected 32594
+ERROR:  invalid page in block 0 of relation base/16388/16389
+demo1=#
+```
+### Что и почему произошло? 
+После изменения содержимого файла чек-суммы не сходятся и сервер не дает делать выборку по этой таблице.
+
+### как проигнорировать ошибку и продолжить работу?
+Изменить настройку `ignore_checksum_failure` установив значение `on`
+В моем случае это помогло, т.к. изменялось только 2 Байта. Про ошибку верификации по прежнему пишет, но целую часть данных дает выбрать.
+Возможно если бы изменения в файле были более масштабные выборка вообще бы не сработала.
+```
+demo1=# select * from students;
+WARNING:  page verification failed, calculated checksum 8952 but expected 32594
+ERROR:  invalid page in block 0 of relation base/16388/16389
+demo1=# set ignore_checksum_failure = on;
+SET
+demo1=# select pg_reload_conf(),
+demo1=# select * from students;
+WARNING:  page verification failed, calculated checksum 8952 but expected 32594
+ id |  name
+----+--------
+  1 | Gosha
+  2 | Alesha
+  3 | Vasyok
+(3 rows)
+```
+
+
+
+
