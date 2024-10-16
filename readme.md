@@ -12,7 +12,7 @@
 
 * [Занятие 8. MVCC, vacuum и autovacuum](8-lesson/8-lesson.md) \\\ Нужно доработать
 
-* [Занятие 9. Журналы](9-lesson/9-lesson.md)
+* [Занятие 9. Журналы](9-lesson/9-lesson.md) \\\ Хлавное начать ...
   
 * [Занятие 10. Блокировки](10-lesson/10-lesson.md)
 
