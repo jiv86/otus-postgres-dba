@@ -1,7 +1,7 @@
 # Занятие 8. MVCC, vacuum и autovacuum. 
 ## Подготовка ВМ
 Создадим в Яндекс Клауде ВМ с требуемыми параметрами и именем `otus-dba-vacuum`
-SSD 15Гб, 4Гб RAM, 2vCPU 
+SSD 15Гб, 4Гб RAM, 2vCPU 100%
 ## Установка Postgres 15
 
 ``` bash
