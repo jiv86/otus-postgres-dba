@@ -10,7 +10,7 @@
 
 * [Занятие 7. Логический уровень PostgreSQL](7-lesson/7-lesson.md) \\\ нужно доработать
 
-* [Занятие 8. MVCC, vacuum и autovacuum](8-lesson/8-lesson.md)
+* [Занятие 8. MVCC, vacuum и autovacuum](8-lesson/8-lesson.md) \\\ Нужно доработать
 
 * [Занятие 9. Журналы](9-lesson/9-lesson.md)
   
@@ -27,3 +27,6 @@
 * [Занятие 20. Сбор и использование статистики](20-lesson/20-lesson.md)
 
 * [Занятие 21. Секционирование](21-lesson/21-lesson.md)
+
+* [Занятие 24. Хранимые функции и процедуры часть 3](24-lesson/24-lesson.md)
+
