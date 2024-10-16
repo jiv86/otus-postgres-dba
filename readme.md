@@ -13,7 +13,7 @@
 * [Занятие 8. MVCC, vacuum и autovacuum](8-lesson/8-lesson.md) \\\ Нужно доработать
 
 * [Занятие 9. Журналы](9-lesson/9-lesson.md) \\\ ГОТОВО
-* [Занятие 10. Блокировки](10-lesson/10-lesson.md)
+* [Занятие 10. Блокировки](10-lesson/10-lesson.md) \\\ В процессе ...
 
 * [Занятие 11. Настройка PostgreSQL](11-lesson/11-lesson.md)
 
