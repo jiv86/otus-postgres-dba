@@ -111,8 +111,25 @@ BEGIN
 demo_locks=*#  update tmp_locks SET col = 'new row in second session' where id = 1;
 ```
 Выполнение транзакции во второй сессии повисает. Делаю COMMIT в первой консоли и во второй.
-Проверяем лог
-
+Проверяем лог `/var/log/postgresql/postgresql-15-locks.log`
+```
+nenar@otus-dba-vaccum:~$ sudo tail -n 13 /var/log/postgresql/postgresql-15-locks.log
+2024-10-16 14:40:01.855 UTC [4493] postgres@demo_locks STATEMENT:  begin
+        update tmp_locks SET col = 'new_row' where id=1;
+2024-10-16 14:43:40.288 UTC [4056] LOG:  checkpoint starting: time
+2024-10-16 14:43:40.501 UTC [4056] LOG:  checkpoint complete: wrote 3 buffers (0.0%); 0 WAL file(s) added, 0 removed, 0 recycled; write=0.203 s, sync=0.003 s, total=0.214 s; sync files=3, longest=0.002 s, average=0.001 s; distance=0 kB, estimate=3830 kB
+2024-10-16 14:44:03.845 UTC [4793] postgres@demo_locks LOG:  process 4793 still waiting for ShareLock on transaction 740 after 200.080 ms
+2024-10-16 14:44:03.845 UTC [4793] postgres@demo_locks DETAIL:  Process holding the lock: 4493. Wait queue: 4793.
+2024-10-16 14:44:03.845 UTC [4793] postgres@demo_locks CONTEXT:  while updating tuple (0,1) in relation "tmp_locks"
+2024-10-16 14:44:03.845 UTC [4793] postgres@demo_locks STATEMENT:  update tmp_locks SET col = 'new row in second session' where id = 1;
+2024-10-16 14:45:59.973 UTC [4793] postgres@demo_locks LOG:  process 4793 acquired ShareLock on transaction 740 after 116327.651 ms
+2024-10-16 14:45:59.973 UTC [4793] postgres@demo_locks CONTEXT:  while updating tuple (0,1) in relation "tmp_locks"
+2024-10-16 14:45:59.973 UTC [4793] postgres@demo_locks STATEMENT:  update tmp_locks SET col = 'new row in second session' where id = 1;
+2024-10-16 14:48:40.584 UTC [4056] LOG:  checkpoint starting: time
+2024-10-16 14:48:40.703 UTC [4056] LOG:  checkpoint complete: wrote 2 buffers (0.0%); 0 WAL file(s) added, 0 removed, 0 recycled; write=0.103 s, sync=0.003 s, total=0.120 s; sync files=2, longest=0.002 s, average=0.002 s; distance=0 kB, estimate=3447 kB
+```
+В логе видим сообщение об ожидании блокировки Sharelock на транзакции с id 740 и то что требуемая блокировка все же была получена через 116 сеунд
+`process 4793 acquired ShareLock on transaction 740 after 116327.651 ms`
 
 ## Смоделируйте ситуацию обновления одной и той же строки тремя командами UPDATE в разных сеансах. Изучите возникшие блокировки в представлении pg_locks и убедитесь, что все они понятны. Пришлите список блокировок и объясните, что значит каждая.
 
