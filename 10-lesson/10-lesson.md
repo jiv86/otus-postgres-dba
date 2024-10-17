@@ -134,8 +134,122 @@ nenar@otus-dba-vaccum:~$ sudo tail -n 13 /var/log/postgresql/postgresql-15-locks
 
 <details><summary><b><i>Смоделируйте ситуацию обновления одной и той же строки тремя командами UPDATE в разных сеансах. Изучите возникшие блокировки в представлении pg_locks и убедитесь, что все они понятны. Пришлите список блокировок и объясните, что значит каждая.</b></i></summary>
 
+### Начинаем первую транзакцию, выводим txid и pid
+```
+postgres=# \c demo_locks;
+You are now connected to database "demo_locks" as user "postgres".
+demo_locks=# BEGIN;
+BEGIN
+demo_locks=*# SELECT txid_current(),pg_backend_pid();
+ txid_current | pg_backend_pid
+--------------+----------------
+          742 |           1478
+(1 row)
+
+demo_locks=*# update tmp_locks SET col = 'new row1' where id = 1;
+UPDATE 1
+```
+
+### Начинаем вторую транзакцию, выводим txid и pid
+```
+postgres=# \c demo_locks;
+You are now connected to database "demo_locks" as user "postgres".
+BEGIN
+demo_locks=*#  SELECT txid_current(),pg_backend_pid();
+ txid_current | pg_backend_pid
+--------------+----------------
+          743 |           1685
+(1 row)
+
+demo_locks=*# update tmp_locks SET col = 'new row2' where id = 1;
+```
+
+### Начинаем третью транзакцию, выводим txid и pid
+```
+postgres=#  \c demo_locks;
+You are now connected to database "demo_locks" as user "postgres".
+demo_locks=# BEGIN;
+BEGIN
+demo_locks=*# SELECT txid_current(),pg_backend_pid();
+ txid_current | pg_backend_pid
+--------------+----------------
+          744 |           1697
+(1 row)
+
+demo_locks=*# update tmp_locks SET col = 'new row3' where id = 1;
+```
+
+### Смотрим информацию о возникших блокировках в процессе выполнения UPDATE в 3х сессиях
+
+```
+demo_locks=# SELECT locktype, mode, granted, pid, pg_blocking_pids(pid) AS wait_for FROM pg_locks;
+   locktype    |       mode       | granted | pid  | wait_for
+---------------+------------------+---------+------+----------
+ relation      | AccessShareLock  | t       | 2284 | {}
+ virtualxid    | ExclusiveLock    | t       | 2284 | {}
+ relation      | RowExclusiveLock | t       | 1697 | {1685}
+ virtualxid    | ExclusiveLock    | t       | 1697 | {1685}
+ relation      | RowExclusiveLock | t       | 1685 | {1478}
+ virtualxid    | ExclusiveLock    | t       | 1685 | {1478}
+ relation      | RowExclusiveLock | t       | 1478 | {}
+ virtualxid    | ExclusiveLock    | t       | 1478 | {}
+ transactionid | ExclusiveLock    | t       | 1697 | {1685}
+ transactionid | ExclusiveLock    | t       | 1685 | {1478}
+ tuple         | ExclusiveLock    | f       | 1697 | {1685}
+ transactionid | ExclusiveLock    | t       | 1478 | {}
+ transactionid | ShareLock        | f       | 1685 | {1478}
+ tuple         | ExclusiveLock    | t       | 1685 | {1478}
+(14 rows)
+```
+### То же самое но с отбором по таблице
+```
+demo_locks=# SELECT locktype, mode, granted, pid, pg_blocking_pids(pid) AS wait_for FROM pg_locks where relation = 'tmp_locks'::regclass;
+ locktype |       mode       | granted | pid  | wait_for
+----------+------------------+---------+------+----------
+ relation | RowExclusiveLock | t       | 1697 | {1685}
+ relation | RowExclusiveLock | t       | 1685 | {1478}
+ relation | RowExclusiveLock | t       | 1478 | {}
+ tuple    | ExclusiveLock    | f       | 1697 | {1685}
+ tuple    | ExclusiveLock    | t       | 1685 | {1478}
+(5 rows)
+```
+Транзакция pid 1478 не ожидает доступности ресурсов от других транзакций. 
+Транзакция 1685 ожидает доступности блокировки RowExclusiveLock от транзакции с pid 1478
+Транзакция 1697 ожидает доступности блокировки RowExclusiveLock от транзакции с pid 1685
+Делаем коммит в первой сессии
+Проверяем блокировки. Теперь это выглядит так:
+
+```
+demo_locks=# SELECT locktype, mode, granted, pid, pg_blocking_pids(pid) AS wait_for FROM pg_locks where relation = 'tmp_locks'::regclass;
+ locktype |       mode       | granted | pid  | wait_for
+----------+------------------+---------+------+----------
+ relation | RowExclusiveLock | t       | 1697 | {1685}
+ relation | RowExclusiveLock | t       | 1685 | {}
+(2 rows)
+```
+Делаем коммит в второй сессии
+
+```
+demo_locks=# SELECT locktype, mode, granted, pid, pg_blocking_pids(pid) AS wait_for FROM pg_locks where relation = 'tmp_locks'::regclass;
+ locktype |       mode       | granted | pid  | wait_for
+----------+------------------+---------+------+----------
+ relation | RowExclusiveLock | t       | 1697 | {}
+(1 row)
+```
+Теперь третью транзакцию ничто не блокирует.
 
 
+```
+demo_locks=# SELECT locktype, relation::REGCLASS, virtualxid AS virtxid, transactionid AS xid, mode, granted FROM pg_locks;
+   locktype    | relation  | virtxid | xid |       mode       | granted
+---------------+-----------+---------+-----+------------------+---------
+ relation      | pg_locks  |         |     | AccessShareLock  | t
+ virtualxid    |           | 9/257   |     | ExclusiveLock    | t
+ relation      | tmp_locks |         |     | RowExclusiveLock | t
+ virtualxid    |           | 7/2     |     | ExclusiveLock    | t
+ transactionid |           |         | 744 | ExclusiveLock    | t
+(5 rows)
+```
 
 </details>
 
