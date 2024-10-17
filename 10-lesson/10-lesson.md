@@ -260,6 +260,27 @@ demo_locks=# SELECT locktype, relation::REGCLASS, virtualxid AS virtxid, transac
 
 <details><summary><b><i>Воспроизведите взаимоблокировку трех транзакций. Можно ли разобраться в ситуации постфактум, изучая журнал сообщений?</b></i></summary>
 
+### Запускаем первую транзакцию в первой сессии
+```
+demo_locks=# BEGIN;
+BEGIN
+demo_locks=*# update tmp_locks SET col = 'row1' where id = 1;
+UPDATE 1
+demo_locks=*# update tmp_locks SET col = 'row2' where id = 2;
+UPDATE 1
+demo_locks=*#
+```
+
+### Запускаем вторую транзакцию во второй сессии
+```
+BEGIN
+demo_locks=*# update tmp_locks SET col = 'new row3' where id = 2;
+update tmp_locks SET col = 'new row4' where id =3;
+```
+
+### запускаем третью транзакцию  в третьей сессии
+```
+```
 
 
 
