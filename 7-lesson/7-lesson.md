@@ -21,8 +21,9 @@ Ver Cluster Port Status Owner    Data directory              Log file
 2. зайдите в созданный кластер под пользователем postgres
    
 ``` bash
-nenar@otus-db-pg-vm-02:~$ sudo -u postgres psql -p 5433
-psql (15.8 (Ubuntu 15.8-1.pgdg24.04+1))
+nenar@otus-logical:~$ sudo -u postgres psql
+could not change directory to "/home/nenar": Permission denied
+psql (14.13 (Ubuntu 14.13-1.pgdg22.04+1))
 Type "help" for help.
 
 postgres=#
