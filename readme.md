@@ -2,7 +2,7 @@
 # "PostgreSQL для администраторов баз данных и разработчиков"
 * 2024-07 Дмитрий Н.
   
-* [Занятие 2. SQL и реляционные СУБД. Введение в PostgreSQL](2-lesson/2-lesson.md)
+* [Занятие 2. SQL и реляционные СУБД. Введение в PostgreSQL](2-lesson/2-lesson-1.md)
 
 * [Занятие 3. Установка PostgreSQL](3-lesson/3-lesson.md)
 
