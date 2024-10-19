@@ -2,17 +2,22 @@
 ## Готовим окружение
 
 1. создайте новый кластер PostgresSQL 14
-* создаем ВМ `otus-logical` в Яндекс Клауде 2vCPU 100%, 4Гб RAM, 20 Гб HDD, Ubuntu 22.04
+### создаем ВМ `otus-logical` в Яндекс Клауде 2vCPU 100%, 4Гб RAM, 20 Гб HDD, Ubuntu 22.04
 
+### Устанавливаем на эту ВМ Postgres 14, при этом создается и запускатся кластер(инстанс) main
+```
+enar@otus-logical:~$ sudo apt-get update
+nenar@otus-logical:~$ sudo apt-get upgrade
+nenar@otus-logical:~$ sudo apt install dirmngr ca-certificates software-properties-common apt-transport-https lsb-release curl -y
+nenar@otus-logical:~$ curl -fSsL https://www.postgresql.org/media/keys/ACCC4CF8.asc | gpg --dearmor | sudo tee /usr/share/keyrings/postgresql.gpg > /dev/null
+nenar@otus-logical:~$ echo deb [arch=amd64,arm64,ppc64el signed-by=/usr/share/keyrings/postgresql.gpg] http://apt.postgresql.org/pub/repos/apt/ $(lsb_release -cs)-pgdg main | sudo tee /etc/apt/sources.list.d/postgresql.list
+nenar@otus-logical:~$ sudo apt update
+nenar@otus-logical:~$ sudo apt install postgresql-client-14 postgresql-14pg_lsl
+nenar@otus-logical:~$ pg_lsclusters
+Ver Cluster Port Status Owner    Data directory              Log file
+14  main    5432 online postgres /var/lib/postgresql/14/main /var/log/postgresql/postgresql-14-main.log
+```
 
-  ``` bash
-  nenar@otus-db-pg-vm-02:~$    sudo pg_createcluster 15 logical
-  nenar@otus-db-pg-vm-02:~$    sudo pg_ctlcluster 15 logical start
-  nenar@otus-db-pg-vm-02:~$    pg_lsclusters
-  nenar@otus-db-pg-vm-02:~$    Ver Cluster Port Status Owner     Data directory                 Log file
-  nenar@otus-db-pg-vm-02:~$    15  logical 5433 online postgres  /var/lib/postgresql/15/logical /var/log/postgresql/postgresql-15-logical.log
-  nenar@otus-db-pg-vm-02:~$    15  main    5432 online <unknown> /mnt/data/15/main              /var/log/postgresql/postgresql-15-main.log
-  ```
 2. зайдите в созданный кластер под пользователем postgres
    
 ``` bash
