@@ -169,6 +169,7 @@ ERROR:  permission denied for table t1
     **НЕТ**
 36. есть идеи почему? если нет - смотрите шпаргалку
 
+    **Потому что права назначаются на объекты в случае их существования и при создании новых объектов в POstgres возникают подобные вопросы с правами** 
     **Выполняем по рекомендации**
     ```
     testdb=# ALTER default privileges in SCHEMA testnm grant SELECT on TABLES to readonly;
