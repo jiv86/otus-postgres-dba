@@ -141,4 +141,96 @@ Command was: COPY exercise12.homework_2 (id, text) FROM stdin;
 pg_restore: warning: errors ignored on restore: 1
 
 ```
-Выдало ошибку про несуществующую схему
+Выдало ошибку про несуществующую схему. Хм...
+Пробуем ресторить в два этапа, с созданием схемы и заливкой оставшихся данных
+```
+sudo -u postgres pg_restore -d otus_test_restore2 -p 5435 --schema-only -j 2 /var/lib/postgresql/pg_backup_dir/backup_restore.sql --verbose
+sudo -u postgres pg_restore -d otus_test_restore2 -p 5435  --data-only --schema exercise12 --table homework_2 -j 2 /var/lib/postgresql/pg_backup_dir/backup_restore.sql --verbose
+```
+Подробный вывод
+```
+nenar@otus-dba-vaccum:~$ sudo -u postgres pg_restore -d otus_test_restore2 -p 5435 --schema-only -j 2 /var/lib/postgresql/pg_backup_dir/backup_restore.sql --verbose
+pg_restore: connecting to database for restore
+pg_restore: processing item 3401 ENCODING ENCODING
+pg_restore: processing item 3402 STDSTRINGS STDSTRINGS
+pg_restore: processing item 3403 SEARCHPATH SEARCHPATH
+pg_restore: processing item 3404 DATABASE backup_restore
+pg_restore: processing item 6 SCHEMA exercise12
+pg_restore: creating SCHEMA "exercise12"
+pg_restore: processing item 216 TABLE homework
+pg_restore: creating TABLE "exercise12.homework"
+pg_restore: processing item 218 TABLE homework_2
+pg_restore: creating TABLE "exercise12.homework_2"
+pg_restore: processing item 217 SEQUENCE homework_2_id_seq
+pg_restore: creating SEQUENCE "exercise12.homework_2_id_seq"
+pg_restore: processing item 3405 SEQUENCE OWNED BY homework_2_id_seq
+pg_restore: creating SEQUENCE OWNED BY "exercise12.homework_2_id_seq"
+pg_restore: processing item 215 SEQUENCE homework_id_seq
+pg_restore: creating SEQUENCE "exercise12.homework_id_seq"
+pg_restore: processing item 3406 SEQUENCE OWNED BY homework_id_seq
+pg_restore: creating SEQUENCE OWNED BY "exercise12.homework_id_seq"
+pg_restore: processing item 3251 DEFAULT homework id
+pg_restore: creating DEFAULT "exercise12.homework id"
+pg_restore: processing item 3252 DEFAULT homework_2 id
+pg_restore: creating DEFAULT "exercise12.homework_2 id"
+pg_restore: entering main parallel loop
+pg_restore: skipping item 3396 TABLE DATA homework
+pg_restore: skipping item 3398 TABLE DATA homework_2
+pg_restore: skipping item 3407 SEQUENCE SET homework_2_id_seq
+pg_restore: skipping item 3408 SEQUENCE SET homework_id_seq
+pg_restore: finished main parallel loop
+
+nenar@otus-dba-vaccum:~$ sudo -u postgres pg_restore -d otus_test_restore2 -p 5435  --data-only --schema exercise12 --ta
+ble homework_2 -j 2 /var/lib/postgresql/pg_backup_dir/backup_restore.sql --verbose
+could not change directory to "/home/nenar": Permission denied
+pg_restore: connecting to database for restore
+pg_restore: processing item 3401 ENCODING ENCODING
+pg_restore: processing item 3402 STDSTRINGS STDSTRINGS
+pg_restore: processing item 3403 SEARCHPATH SEARCHPATH
+pg_restore: processing item 3404 DATABASE backup_restore
+pg_restore: processing item 6 SCHEMA exercise12
+pg_restore: processing item 216 TABLE homework
+pg_restore: processing item 218 TABLE homework_2
+pg_restore: processing item 217 SEQUENCE homework_2_id_seq
+pg_restore: processing item 3405 SEQUENCE OWNED BY homework_2_id_seq
+pg_restore: processing item 215 SEQUENCE homework_id_seq
+pg_restore: processing item 3406 SEQUENCE OWNED BY homework_id_seq
+pg_restore: processing item 3251 DEFAULT homework id
+pg_restore: processing item 3252 DEFAULT homework_2 id
+pg_restore: entering main parallel loop
+pg_restore: skipping item 3396 TABLE DATA homework
+pg_restore: launching item 3398 TABLE DATA homework_2
+pg_restore: skipping item 3407 SEQUENCE SET homework_2_id_seq
+pg_restore: skipping item 3408 SEQUENCE SET homework_id_seq
+pg_restore: processing data for table "exercise12.homework_2"
+pg_restore: finished item 3398 TABLE DATA homework_2
+pg_restore: finished main parallel loop
+```
+Похоже на то что такой вариант сработал и не выдал ворнингов..
+
+Проверяем: данные есть во второй таблице и нет в первой как и было в задании.
+
+```
+postgres=# \c otus_test_restore2;
+You are now connected to database "otus_test_restore2" as user "postgres".
+otus_test_restore2=# select * from exercise12.homework_2 limit 10;
+ id |               text
+----+----------------------------------
+  1 | 0eb99a76a6be5f3cb09a4373e968580f
+  2 | 58f80634b0a51550237d1c59504099c6
+  3 | 915084aaa68f057f8a3e48d26e692401
+  4 | a1736fd481557b841dc1a6ea61a602ae
+  5 | 70e322a3eb5e0c95bce65a444aa73a6c
+  6 | 5f89ffb69caf855a0a5c7b528908fb7c
+  7 | b7ddff2a56095ab534b6decd6be2ca0e
+  8 | 74f883c29b29e4aa4cf8caca6fac6f47
+  9 | ca8ae2ac2effe3bde1d99bfb8d7501ca
+ 10 | c64f4e5c1b4f135171727f8118dae0d8
+(10 rows)
+
+otus_test_restore2=# select * from exercise12.homework limit 10;
+ id | text
+----+------
+(0 rows)
+
+```
