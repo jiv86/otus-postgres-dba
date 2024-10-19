@@ -6,7 +6,7 @@
 
 ### Устанавливаем на эту ВМ Postgres 14, при этом создается и запускатся кластер(инстанс) main
 ```
-enar@otus-logical:~$ sudo apt-get update
+тenar@otus-logical:~$ sudo apt-get update
 nenar@otus-logical:~$ sudo apt-get upgrade
 nenar@otus-logical:~$ sudo apt install dirmngr ca-certificates software-properties-common apt-transport-https lsb-release curl -y
 nenar@otus-logical:~$ curl -fSsL https://www.postgresql.org/media/keys/ACCC4CF8.asc | gpg --dearmor | sudo tee /usr/share/keyrings/postgresql.gpg > /dev/null
