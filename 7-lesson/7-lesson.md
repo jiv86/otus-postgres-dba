@@ -167,12 +167,13 @@ ERROR:  permission denied for table t1
 
     **НЕТ**
 36. есть идеи почему? если нет - смотрите шпаргалку
-    Выполняем по рекомендации
+
+    **Выполняем по рекомендации**
     ```
     testdb=# ALTER default privileges in SCHEMA testnm grant SELECT on TABLES to readonly;
     ALTER DEFAULT PRIVILEGES
     ```
-37. сделайте select * from testnm.t1;
+38. сделайте select * from testnm.t1;
 45. получилось?
 
     **ДА**
