@@ -12,7 +12,7 @@ nenar@otus-logical:~$ sudo apt install dirmngr ca-certificates software-properti
 nenar@otus-logical:~$ curl -fSsL https://www.postgresql.org/media/keys/ACCC4CF8.asc | gpg --dearmor | sudo tee /usr/share/keyrings/postgresql.gpg > /dev/null
 nenar@otus-logical:~$ echo deb [arch=amd64,arm64,ppc64el signed-by=/usr/share/keyrings/postgresql.gpg] http://apt.postgresql.org/pub/repos/apt/ $(lsb_release -cs)-pgdg main | sudo tee /etc/apt/sources.list.d/postgresql.list
 nenar@otus-logical:~$ sudo apt update
-nenar@otus-logical:~$ sudo apt install postgresql-client-14 postgresql-14pg_lsl
+nenar@otus-logical:~$ sudo apt install postgresql-client-14 postgresql-14
 nenar@otus-logical:~$ pg_lsclusters
 Ver Cluster Port Status Owner    Data directory              Log file
 14  main    5432 online postgres /var/lib/postgresql/14/main /var/log/postgresql/postgresql-14-main.log
