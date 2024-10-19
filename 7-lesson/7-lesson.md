@@ -80,13 +80,13 @@ FATAL:  Peer authentication failed for user "testread"
 ```
 # "local" is for Unix domain socket connections only
 local   all             all                                     scram-sha-256
-nenar@otus-db-pg-vm-02:~$  sudo pg_ctlcluster 15 logical resta
+nenar@logical:~$  sudo pg_ctlcluster 14 main restart
 ```
 Снова пробуем подключится
 ``` bash
-nenar@otus-db-pg-vm-02:~$ psql -U testread -d testdb -p 5433
+nenar@otus-logical:~$ psql -U testread -d testdb
 Password for user testread:
-psql (15.8 (Ubuntu 15.8-1.pgdg24.04+1))
+psql (14.13 (Ubuntu 14.13-1.pgdg22.04+1))
 Type "help" for help.
 
 testdb=>
@@ -103,24 +103,35 @@ LINE 1: select * from t1;
   **НЕТ, НЕ ПОЛУЧИЛОСЬ.**
 
 17. напишите что именно произошло в тексте домашнего задания
-18. у вас есть идеи почему? ведь права то дали?
-19. посмотрите на список таблиц
-20. подсказка в шпаргалке под пунктом 20
-21. а почему так получилось с таблицей (если делали сами и без шпаргалки то может у вас все нормально)
+    **Выборку пытались делать без указания схемы (при выборке использовался параметр `search_path`в котором имеется только схема `public`), а права давали на схему testnm**
+19. у вас есть идеи почему? ведь права то дали?
+20. посмотрите на список таблиц
+    **ПОСМОТРЕЛ**
+       ```
+       testdb=> \d
+       List of relations
+       Schema | Name | Type  |  Owner
+      --------+------+-------+----------
+       public | t1   | table | postgres
+      (1 row)
+       ```
+22. подсказка в шпаргалке под пунктом 20
+23. а почему так получилось с таблицей (если делали сами и без шпаргалки то может у вас все нормально)
 
      **Нет прав на чтение таблицы t1 у пользователя с ролью readonly т.к. у данной роли права есть только в схеме testnm а запрос на создание таблицы мы выполнили в 6 пункте
     без явного указания имени схемы, соответсвенно в схему public**
 
     
-22. вернитесь в базу данных testdb под пользователем postgres
-23. удалите таблицу t1
-24. создайте ее заново но уже с явным указанием имени схемы testnm
-25. вставьте строку со значением c1=1
+24. вернитесь в базу данных testdb под пользователем postgres
+25. удалите таблицу t1
+26. создайте ее заново но уже с явным указанием имени схемы testnm
+27. вставьте строку со значением c1=1
 ```
-nenar@otus-db-pg-vm-02:~$ sudo -u postgres psql -p 5433
-could not change directory to "/home/nenar": Permission denied
-psql (15.8 (Ubuntu 15.8-1.pgdg24.04+1))
+nenar@otus-logical:~$ sudo -u postgres psql
+psql (14.13 (Ubuntu 14.13-1.pgdg22.04+1))
 Type "help" for help.
+
+postgres=#
 postgres=# \c testdb
 You are now connected to database "testdb" as user "postgres".
 testdb=# drop table t1;
