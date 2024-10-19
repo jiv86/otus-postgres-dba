@@ -2,9 +2,9 @@
 ## Готовим окружение
 
 1. создайте новый кластер PostgresSQL 14
-* используем ВМ `otus-db-pg-vm-02` в Яндекс Клауде из предыдущего задания,
-* На ней уже установлен инстанс Postgres, правда версии 15
-* создадим новый инсанс версии 15 с названием `logical`
+* создаем ВМ `otus-logical` в Яндекс Клауде 2vCPU 100%, 4Гб RAM, 20 Гб HDD, Ubuntu 22.04
+
+
   ``` bash
   nenar@otus-db-pg-vm-02:~$    sudo pg_createcluster 15 logical
   nenar@otus-db-pg-vm-02:~$    sudo pg_ctlcluster 15 logical start
