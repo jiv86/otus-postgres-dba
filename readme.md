@@ -8,7 +8,7 @@
 
 * [Занятие 6. Физический уровень PostgreSQL](6-lesson/6-lesson.md) \\\ ГОТОВО
 
-* [Занятие 7. Логический уровень PostgreSQL](7-lesson/7-lesson.md) \\\ нужно доработать
+* [Занятие 7. Логический уровень PostgreSQL](7-lesson/7-lesson.md) \\\ ГОТОВО
 
 * [Занятие 8. MVCC, vacuum и autovacuum](8-lesson/8-lesson.md) \\\ Нужно доработать
 
