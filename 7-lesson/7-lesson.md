@@ -170,19 +170,48 @@ ERROR:  permission denied for table t1
 36. есть идеи почему? если нет - смотрите шпаргалку
 
     **Потому что права назначаются на объекты в случае их существования и при создании новых объектов в POstgres возникают подобные вопросы с правами** 
-    **Выполняем по рекомендации**
+    **Выполняем по рекомендации назначаем дефолтные привилегии в схеме testnm при создании всех обектов класса таблица давать права на SELECT роли readonly**
+    **Кроме того повторно выполняем `grant select on all tables in schema testnm to readonly;`**
     ```
     testdb=# ALTER default privileges in SCHEMA testnm grant SELECT on TABLES to readonly;
-    ALTER DEFAULT PRIVILEGES
+    grant select on all tables in schema testnm to readonly;    
     ```
 38. сделайте select * from testnm.t1;
+    
+``` nenar@otus-logical:~$ psql -U testread -d testdb -p 5433
+        Password for user testread:
+        psql (14.13 (Ubuntu 14.13-1.pgdg22.04+1))
+        Type "help" for help.
+
+       testdb=> select * from testnm.t1;
+       c1
+       ----
+       1
+      (1 row)
+```
 45. получилось?
 
     **ДА**
 47. ура!
 48. теперь попробуйте выполнить команду create table t2(c1 integer); insert into t2 values (2);
 49. а как так? нам же никто прав на создание таблиц и insert в них под ролью readonly?
-50. есть идеи как убрать эти права? если нет - смотрите шпаргалку
-51. если вы справились сами то расскажите что сделали и почему, если смотрели шпаргалку - объясните что сделали и почему выполнив указанные в ней команды
-52. теперь попробуйте выполнить команду create table t3(c1 integer); insert into t2 values (2);
-53. расскажите что получилось и почему
+    
+51. есть идеи как убрать эти права? если нет - смотрите шпаргалку
+52. если вы справились сами то расскажите что сделали и почему, если смотрели шпаргалку - объясните что сделали и почему выполнив указанные в ней команды
+    У схемы роли `PUBLIC` в которую по умолчанию входят все пользователи есть права на все действия в схему public
+
+Забираем права
+```
+REVOKE CREATE on SCHEMA public FROM public; 
+REVOKE ALL on DATABASE testdb FROM public;
+```
+54. теперь попробуйте выполнить команду create table t3(c1 integer); insert into t2 values (2);
+```
+testdb=> create table t3(c1 integer);
+ERROR:  permission denied for schema public
+LINE 1: create table t3(c1 integer);
+testdb=> insert into t2 values (2);
+INSERT 0 1
+```
+56. расскажите что получилось и почему
+### На создание таблицы t3 не хватило прав, т.к. их отобрали у роли `public` но вставка в t2 успешно отработала, т.к таблицу t2 создал пользователь testreead и он являеется ее владельцем и в данном , в случае с владельцем явно убранные разрешения не работают.
