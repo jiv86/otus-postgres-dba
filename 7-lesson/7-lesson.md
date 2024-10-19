@@ -22,7 +22,6 @@ Ver Cluster Port Status Owner    Data directory              Log file
    
 ``` bash
 nenar@otus-logical:~$ sudo -u postgres psql
-could not change directory to "/home/nenar": Permission denied
 psql (14.13 (Ubuntu 14.13-1.pgdg22.04+1))
 Type "help" for help.
 
