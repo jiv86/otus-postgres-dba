@@ -247,60 +247,56 @@ wal_recycle = on
 * Тест 14 клиентов, 1 воркер
 ```
 dimon@postgres15-benchmark:~$ sudo -iu postgres
-postgres@postgres15-benchmark:~$ pgbench -c14 -P 60 -T 600 -U postgres test
+postgres@postgres15-benchmark:~$ pgbench -c14 -P 60 -T 300 -U postgres test
 pgbench (15.8 (Ubuntu 15.8-1.pgdg24.04+1))
 starting vacuum...end.
-progress: 60.0 s, 2937.6 tps, lat 4.749 ms stddev 3.786, 0 failed
-progress: 120.0 s, 2946.5 tps, lat 4.738 ms stddev 3.823, 0 failed
-progress: 180.0 s, 2952.2 tps, lat 4.728 ms stddev 3.798, 0 failed
-progress: 240.0 s, 2918.8 tps, lat 4.782 ms stddev 3.871, 0 failed
-progress: 300.0 s, 2918.6 tps, lat 4.783 ms stddev 3.860, 0 failed
-progress: 360.0 s, 2852.0 tps, lat 4.895 ms stddev 3.977, 0 failed
-progress: 420.0 s, 2791.2 tps, lat 5.002 ms stddev 4.087, 0 failed
-progress: 480.0 s, 2816.0 tps, lat 4.957 ms stddev 3.994, 0 failed
-progress: 540.0 s, 2892.6 tps, lat 4.826 ms stddev 3.875, 0 failed
-progress: 600.0 s, 2833.6 tps, lat 4.926 ms stddev 3.938, 0 failed
+progress: 60.0 s, 2993.8 tps, lat 4.660 ms stddev 3.777, 0 failed
+progress: 120.0 s, 2976.3 tps, lat 4.690 ms stddev 3.792, 0 failed
+progress: 180.0 s, 2913.4 tps, lat 4.792 ms stddev 3.895, 0 failed
+progress: 240.0 s, 2943.1 tps, lat 4.743 ms stddev 3.834, 0 failed
+progress: 300.0 s, 2945.5 tps, lat 4.739 ms stddev 3.834, 0 failed
 transaction type: <builtin: TPC-B (sort of)>
 scaling factor: 1
 query mode: simple
 number of clients: 14
 number of threads: 1
 maximum number of tries: 1
-duration: 600 s
-number of transactions actually processed: 1731561
+duration: 300 s
+number of transactions actually processed: 886347
 number of failed transactions: 0 (0.000%)
-latency average = 4.837 ms
-latency stddev = 3.902 ms
-initial connection time = 32.584 ms
-tps = 2886.043328 (without initial connection time)
+latency average = 4.724 ms
+latency stddev = 3.827 ms
+initial connection time = 30.035 ms
+tps = 2954.697154 (without initial connection time)
 ```
-* тест 14 клиентов 14 воркеров
+**Результат: 2955 TPS**
 
+
+* тест 14 клиентов 14 воркеров
 ```
-postgres@postgres15-benchmark:~$ pgbench -c14 -j 14 -P 60 -T 600 -U postgres test
+postgres@postgres15-benchmark:~$ pgbench -c14 -j 14 -P 60 -T 300 -U postgres test
 pgbench (15.8 (Ubuntu 15.8-1.pgdg24.04+1))
 starting vacuum...end.
-progress: 60.0 s, 4944.0 tps, lat 2.831 ms stddev 2.539, 0 failed
-progress: 120.0 s, 4899.8 tps, lat 2.857 ms stddev 2.493, 0 failed
-progress: 180.0 s, 4843.6 tps, lat 2.890 ms stddev 2.517, 0 failed
-progress: 240.0 s, 4842.0 tps, lat 2.891 ms stddev 2.510, 0 failed
-progress: 300.0 s, 4928.2 tps, lat 2.841 ms stddev 2.489, 0 failed
-progress: 360.0 s, 4873.5 tps, lat 2.872 ms stddev 2.502, 0 failed
-progress: 420.0 s, 4766.4 tps, lat 2.937 ms stddev 2.567, 0 failed
-progress: 480.0 s, 4812.8 tps, lat 2.909 ms stddev 2.559, 0 failed
-progress: 540.0 s, 4816.2 tps, lat 2.907 ms stddev 2.515, 0 failed
-progress: 600.0 s, 4962.2 tps, lat 2.821 ms stddev 2.477, 0 failed
+progress: 60.0 s, 4845.3 tps, lat 2.889 ms stddev 2.594, 0 failed
+progress: 120.0 s, 4988.0 tps, lat 2.806 ms stddev 2.475, 0 failed
+progress: 180.0 s, 4974.3 tps, lat 2.814 ms stddev 2.465, 0 failed
+progress: 240.0 s, 4910.5 tps, lat 2.851 ms stddev 2.478, 0 failed
 transaction type: <builtin: TPC-B (sort of)>
 scaling factor: 1
 query mode: simple
 number of clients: 14
 number of threads: 14
 maximum number of tries: 1
-duration: 600 s
-number of transactions actually processed: 2921332
+duration: 300 s
+number of transactions actually processed: 1485683
 number of failed transactions: 0 (0.000%)
-latency average = 2.875 ms
-latency stddev = 2.517 ms
-initial connection time = 9.865 ms
-tps = 4868.904876 (without initial connection time)
+latency average = 2.827 ms
+latency stddev = 2.490 ms
+initial connection time = 9.229 ms
+tps = 4952.302716 (without initial connection time)
 ```
+**Результат: 4952 TPS**
+
+### ВЫВОД: в результате применения настроек прирост показателей транзакций в секунду в тесте `pgbench` составил 42% в однопоточном тесте и 130% в многопоточном режиме (14 потоков). 
+### Наиболее значимы эффект дает включение асинхронного коммита `synchronous_commit = off`
+
