@@ -97,10 +97,51 @@ tps = 2075.357013 (without initial connection time)
 
 Сервис предлагает следующие настройки для данной конфигурации
 
+| Название параметра                                                       | Значение по умолчанию          | Значение для применения
+| ------------------------------------------------------------------------ | ------------------------------ | ------------------------
+| `max_connections`                                                        | 100                            | 500
+| `superuser_reserved_connections`                                         |                                | 3
+| `shared_buffers`                                                         | '128 MB'                       | '16384 MB'
+| `work_mem`                                                               |                                | '32 MB
+| `maintenance_work_mem`                                                   |                                | '520 MB'
+| `huge_pages`                                                             |                                | try
+| `effective_cache_size`                                                   |                                | '45GB'
+| `random_page_cost `                                                      |                                | 1.25
+| `shared_preload_libraries`                                               |                                | 'pg_stat_statements' 
+| `track_io_timing`                                                        |                                | on
+| `track_functions`                                                        |                                | pl
+| `wal_level`                                                              |                                | replica
+| `max_wal_senders`                                                        |                                | 10
+| `synchronous_commit`                                                     |                                | off
+| `checkpoint_timeout`                                                     |                                | '15 min'
+| `checkpoint_completion_target`                                           |                                | 0.9
+| `max_wal_size`                                                           |                                | '10240 MB'
+| `min_wal_size`                                                           |                                | '5120 MB'
+| `wal_level`                                                              |                                | replica
+| `archive_mode`                                                           |                                | on
+| `archive_command`                                                        |                                | '/bin/true'
+| `wal_compression`                                                        |                                | on
+| `wal_buffers`                                                            |                                | -1
+| `wal_keep_size`                                                          |                                | '22080 MB'
+| `bgwriter_delay`                                                         |                                | '200ms'
+| `bgwriter_lru_maxpages`                                                  |                                | '100'
+| `bgwriter_lru_multiplier`                                                |                                | 2.0
+| `bgwriter_flush_after`                                                   |                                | 0
+| `max_worker_processes`                                                   |                                | 14
+| `max_parallel_workers_per_gather`                                        |                                | 7
+| `max_parallel_maintenance_workers`                                       |                                | 7
+| `max_parallel_workers`                                                   |                                | 14
+| `parallel_leader_participation`                                          |                                | on
+| `enable_partitionwise_join`                                              |                                | on
+| `enable_partitionwise_aggregate`                                         |                                | on
+| `jit`                                                                    |                                | on
+| `max_slot_wal_keep_size`                                                 |                                | '1000 MB'
+| `track_wal_io_timing`                                                    |                                | on
+| `maintenance_io_concurrency`                                             |                                | 500
+| `wal_recycle`                                                            |                                | on
 
 
 <details><summary><b><i>Вывод из сервиса pgconfigurator.cybertec.at</b></i></summary>
-
 
 ```
 # DISCLAIMER - Software and the resulting config files are provided AS IS - IN NO EVENT SHALL
@@ -176,6 +217,5 @@ wal_recycle = on
 # https://www.cybertec-postgresql.com
 # for more professional expertise.
 ```
-
 </details>
 
