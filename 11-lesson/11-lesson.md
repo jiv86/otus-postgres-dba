@@ -301,3 +301,72 @@ tps = 4952.302716 (without initial connection time)
 > В результате применения настроек прирост показателей транзакций в секунду в тесте `pgbench` составил 42% в однопоточном тесте и 130% в многопоточном режиме (14 потоков). 
 > Наиболее значимый эффект дает включение асинхронного коммита `synchronous_commit = off`
 
+
+### Пробуем включить huge pages
+
+* Получаем необходимый объем памяти в Кб: по PID процесса postmaster
+```
+dimon@postgres15-benchmark:~$ grep ^VmPeak /proc/15096/status
+VmPeak: 17269600 kB
+```
+
+```
+postgres=# select 17269600/1024/2;
+ ?column?
+----------
+     8432
+(1 row)
+```
+* Указываем данное количество страниц в `/etc/sysctl.conf` для vm.nr_hugepages, `vm.nr_hugepages = 8432`
+* Указываем в `postgresql.conf` параметр `huge_pages = on`
+* Перезапускаем инстанс Postgres
+* Проверим, создано ли запрошенное количество huge pages:
+```
+dimon@postgres15-benchmark:~$ grep ^Huge /proc/meminfo
+HugePages_Total:    8432
+HugePages_Free:     8432
+HugePages_Rsvd:        0
+HugePages_Surp:        0
+Hugepagesize:       2048 kB
+Hugetlb:        17268736 kB
+
+
+dimon@postgres15-benchmark:~$ grep ^Huge /proc/meminfo
+HugePages_Total:    8432
+HugePages_Free:     8432
+HugePages_Rsvd:        0
+HugePages_Surp:        0
+Hugepagesize:       2048 kB
+Hugetlb:        17268736 kB
+
+```
+#### Запускаем многопоточный тест `pgbench`
+
+```
+dimon@postgres15-benchmark:~$ sudo -su postgres
+postgres@postgres15-benchmark:/home/dimon$ pgbench -c14 -j 14 -P 60 -T 300 -U postgres test
+pgbench (15.8 (Ubuntu 15.8-1.pgdg24.04+1))
+starting vacuum...end.
+progress: 60.0 s, 3733.8 tps, lat 3.746 ms stddev 3.401, 0 failed
+progress: 120.0 s, 4049.2 tps, lat 3.457 ms stddev 3.127, 0 failed
+progress: 180.0 s, 4120.1 tps, lat 3.398 ms stddev 3.059, 0 failed
+progress: 240.0 s, 4003.9 tps, lat 3.496 ms stddev 3.165, 0 failed
+transaction type: <builtin: TPC-B (sort of)>
+scaling factor: 1
+query mode: simple
+number of clients: 14
+number of threads: 14
+maximum number of tries: 1
+duration: 300 s
+number of transactions actually processed: 1200334
+number of failed transactions: 0 (0.000%)
+latency average = 3.498 ms
+latency stddev = 3.167 ms
+initial connection time = 53.370 ms
+tps = 4001.299194 (without initial connection time)
+```
+**Результат: 4001 TPS**
+**После включения huge_pages в многопоточном тесте результат TPS уменьшился на 900**
+
+
+
