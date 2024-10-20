@@ -41,7 +41,7 @@ vacuuming...
 creating primary keys...
 done in 0.14 s (drop tables 0.00 s, create tables 0.00 s, client-side generate 0.09 s, vacuum 0.02 s, primary keys 0.02 s).
 ```
-#### Проводим тест pgbench 14 на базе `test`, продолжительность 600 секунд, вывод результатов каждые 60 сек
+#### Проводим тест pgbench 14 соединений на базе `test`, продолжительность 600 секунд, вывод результатов каждые 60 сек
 
 ```
 postgres@postgres15-benchmark:~$ pgbench -c14 -P 60 -T 600 -U postgres test
