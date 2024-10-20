@@ -80,5 +80,20 @@ tps = 2075.357013 (without initial connection time)
 Для расчета воспользуемся сервисом https://pgconfigurator.cybertec.at/
 Исходим из следующих параметров.
 
+| Название параметра                                                       | Значение                       | 
+| ------------------------------------------------------------------------ | ------------------------------ |
+| Select your version of PostgreSQL:                                       | 15                             | 
+| GB of RAM in your server:                                                | 64                             | 
+| Number of CPUs (= cores):                                                | 14                             | 
+| Disk Type:                                                               | SSD                            | 
+| Number of disks:                                                         | 10                             | 
+| How would you describe your workload?                                    | OLTP                           | 
+| How many concurrent open connections do you expect?                      | 500                            |
+| How many replicas do you need?                                           | 1                              | 
+| Which backup method are you planning to use?                             | pg_basebackup: Binary backups  | 
+| Do you want to activate wal recycling?                                   | YES                            | 
+| Can you lose single transactions in case of a crash?                     | YES                            | 
+| Are you willing to try out experimental features for better performance? | YES                            | 
+
 
 ####
