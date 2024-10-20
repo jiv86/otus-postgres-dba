@@ -99,7 +99,7 @@ tps = 2075.357013 (without initial connection time)
 
 
 
-<details><summary><b><i>Вывод из сервиса *pgconfigurator.cybertec.at*</b></i></summary>
+<details><summary><b><i>Вывод из сервиса pgconfigurator.cybertec.at</b></i></summary>
 
 
 ```
