@@ -41,38 +41,61 @@ vacuuming...
 creating primary keys...
 done in 0.14 s (drop tables 0.00 s, create tables 0.00 s, client-side generate 0.09 s, vacuum 0.02 s, primary keys 0.02 s).
 ```
-#### Проводим тест pgbench 14 соединений на базе `test`, продолжительность 600 секунд, вывод результатов каждые 60 сек
+#### Проводим тест pgbench 14 клиентов, 1 поток, на базе `test`, продолжительность 300 секунд, вывод результатов каждые 60 сек
 
 ```
-postgres@postgres15-benchmark:~$ pgbench -c14 -P 60 -T 600 -U postgres test
+dimon@postgres15-benchmark:~$ sudo -iu postgres
+postgres@postgres15-benchmark:~$ pgbench -c14 -P 60 -T 300 -U postgres test
 pgbench (15.8 (Ubuntu 15.8-1.pgdg24.04+1))
 starting vacuum...end.
-progress: 60.0 s, 2103.3 tps, lat 6.638 ms stddev 5.014, 0 failed
-progress: 120.0 s, 2102.4 tps, lat 6.644 ms stddev 4.994, 0 failed
-progress: 180.0 s, 2091.2 tps, lat 6.680 ms stddev 5.067, 0 failed
-progress: 240.0 s, 2092.0 tps, lat 6.678 ms stddev 5.214, 0 failed
-progress: 300.0 s, 2092.9 tps, lat 6.675 ms stddev 5.281, 0 failed
-progress: 360.0 s, 1972.6 tps, lat 7.082 ms stddev 5.595, 0 failed
-progress: 420.0 s, 2099.5 tps, lat 6.654 ms stddev 5.253, 0 failed
-progress: 480.0 s, 2011.7 tps, lat 6.945 ms stddev 5.449, 0 failed
-progress: 540.0 s, 2092.7 tps, lat 6.675 ms stddev 5.110, 0 failed
-progress: 600.0 s, 2094.3 tps, lat 6.670 ms stddev 5.100, 0 failed
+progress: 60.0 s, 2033.5 tps, lat 6.866 ms stddev 5.189, 0 failed
+progress: 120.0 s, 2077.8 tps, lat 6.724 ms stddev 5.126, 0 failed
+progress: 180.0 s, 2079.8 tps, lat 6.717 ms stddev 5.186, 0 failed
+progress: 240.0 s, 2072.9 tps, lat 6.740 ms stddev 5.297, 0 failed
+progress: 300.0 s, 2069.0 tps, lat 6.752 ms stddev 5.234, 0 failed
 transaction type: <builtin: TPC-B (sort of)>
 scaling factor: 1
 query mode: simple
 number of clients: 14
 number of threads: 1
 maximum number of tries: 1
-duration: 600 s
-number of transactions actually processed: 1245175
+duration: 300 s
+number of transactions actually processed: 620002
 number of failed transactions: 0 (0.000%)
-latency average = 6.731 ms
-latency stddev = 5.210 ms
-initial connection time = 27.452 ms
-tps = 2075.357013 (without initial connection time)
+latency average = 6.759 ms
+latency stddev = 5.207 ms
+initial connection time = 30.231 ms
+tps = 2066.816667 (without initial connection time)
+postgres@postgres15-benchmark:~$
 ```
-**В среднем получается 2075 TPS**
+**Результат: 2067 TPS**
 
+**Делаем тест 14 клиентов 14 потоков**
+
+```
+postgres@postgres15-benchmark:~$ pgbench -c14 -j 14 -P 60 -T 300 -U postgres test
+pgbench (15.8 (Ubuntu 15.8-1.pgdg24.04+1))
+starting vacuum...end.
+progress: 60.0 s, 2128.2 tps, lat 6.576 ms stddev 5.310, 0 failed
+progress: 120.0 s, 2163.5 tps, lat 6.471 ms stddev 5.247, 0 failed
+progress: 180.0 s, 2144.4 tps, lat 6.528 ms stddev 5.270, 0 failed
+progress: 240.0 s, 2155.2 tps, lat 6.496 ms stddev 5.261, 0 failed
+progress: 300.0 s, 2167.2 tps, lat 6.459 ms stddev 5.280, 0 failed
+transaction type: <builtin: TPC-B (sort of)>
+scaling factor: 1
+query mode: simple
+number of clients: 14
+number of threads: 14
+maximum number of tries: 1
+duration: 300 s
+number of transactions actually processed: 645531
+number of failed transactions: 0 (0.000%)
+latency average = 6.506 ms
+latency stddev = 5.274 ms
+initial connection time = 8.826 ms
+tps = 2151.751100 (without initial connection time)
+```
+**Результат: 2151 TPS**
 ### Настраиваем кластер на максимальную производительность 
 
 #### Рассчет параметров
