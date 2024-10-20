@@ -95,5 +95,11 @@ tps = 2075.357013 (without initial connection time)
 | Can you lose single transactions in case of a crash?                     | YES                            | 
 | Are you willing to try out experimental features for better performance? | YES                            | 
 
+Сервис предлагает следующие настройки для данной конфигурации
+
+
+Вывод из сервиса *pgconfigurator.cybertec.at*
+
+
 
 ####
