@@ -100,45 +100,44 @@ tps = 2075.357013 (without initial connection time)
 | Название параметра                                                       | Значение по умолчанию          | Значение для применения
 | ------------------------------------------------------------------------ | ------------------------------ | ------------------------
 | `max_connections`                                                        | 100                            | 500
-| `superuser_reserved_connections`                                         |                                | 3
-| `shared_buffers`                                                         | '128 MB'                       | '16384 MB'
-| `work_mem`                                                               |                                | '32 MB
-| `maintenance_work_mem`                                                   |                                | '520 MB'
-| `huge_pages`                                                             |                                | try
-| `effective_cache_size`                                                   |                                | '45GB'
-| `random_page_cost `                                                      |                                | 1.25
+| `superuser_reserved_connections`                                         | 3                              | 3
+| `shared_buffers`                                                         | '128MB'                        | '16384MB'
+| `work_mem`                                                               | '4MB'                          | '32MB
+| `maintenance_work_mem`                                                   | '64MB'                         | '520MB'
+| `huge_pages`                                                             | try                            | try
+| `effective_cache_size`                                                   | '4GB'                          | '45GB'
+| `random_page_cost`                                                       | 4.0                            | 1.25
 | `shared_preload_libraries`                                               |                                | 'pg_stat_statements' 
-| `track_io_timing`                                                        |                                | on
-| `track_functions`                                                        |                                | pl
-| `wal_level`                                                              |                                | replica
-| `max_wal_senders`                                                        |                                | 10
-| `synchronous_commit`                                                     |                                | off
-| `checkpoint_timeout`                                                     |                                | '15 min'
-| `checkpoint_completion_target`                                           |                                | 0.9
-| `max_wal_size`                                                           |                                | '10240 MB'
-| `min_wal_size`                                                           |                                | '5120 MB'
-| `wal_level`                                                              |                                | replica
-| `archive_mode`                                                           |                                | on
+| `track_io_timing`                                                        | off                            | on
+| `track_functions`                                                        | none                           | pl
+| `wal_level`                                                              | replica                        | replica
+| `max_wal_senders`                                                        | 10                             | 10
+| `synchronous_commit`                                                     | on                             | off
+| `checkpoint_timeout`                                                     | '5min'                         | '15min'
+| `checkpoint_completion_target`                                           | 0.9                            | 0.9
+| `max_wal_size`                                                           | 1GB                            | '10GB'
+| `min_wal_size`                                                           | 80MB                           | '5120MB'
+| `archive_mode`                                                           | off                            | on
 | `archive_command`                                                        |                                | '/bin/true'
-| `wal_compression`                                                        |                                | on
-| `wal_buffers`                                                            |                                | -1
-| `wal_keep_size`                                                          |                                | '22080 MB'
-| `bgwriter_delay`                                                         |                                | '200ms'
-| `bgwriter_lru_maxpages`                                                  |                                | '100'
-| `bgwriter_lru_multiplier`                                                |                                | 2.0
-| `bgwriter_flush_after`                                                   |                                | 0
-| `max_worker_processes`                                                   |                                | 14
-| `max_parallel_workers_per_gather`                                        |                                | 7
-| `max_parallel_maintenance_workers`                                       |                                | 7
-| `max_parallel_workers`                                                   |                                | 14
-| `parallel_leader_participation`                                          |                                | on
-| `enable_partitionwise_join`                                              |                                | on
-| `enable_partitionwise_aggregate`                                         |                                | on
-| `jit`                                                                    |                                | on
-| `max_slot_wal_keep_size`                                                 |                                | '1000 MB'
-| `track_wal_io_timing`                                                    |                                | on
-| `maintenance_io_concurrency`                                             |                                | 500
-| `wal_recycle`                                                            |                                | on
+| `wal_compression`                                                        | off                            | on
+| `wal_buffers`                                                            | -1                             | -1
+| `wal_keep_size`                                                          | 0                              | 22080
+| `bgwriter_delay`                                                         | 200ms                          | 200ms
+| `bgwriter_lru_maxpages`                                                  | 100                            | 100
+| `bgwriter_lru_multiplier`                                                | 2.0                            | 2.0
+| `bgwriter_flush_after`                                                   | 512kB                          | 0
+| `max_worker_processes`                                                   | 8                              | 14
+| `max_parallel_workers_per_gather`                                        | 2                              | 7
+| `max_parallel_maintenance_workers`                                       | 2                              | 7
+| `max_parallel_workers`                                                   | 8                              | 14
+| `parallel_leader_participation`                                          | on                             | on
+| `enable_partitionwise_join`                                              | off                            | on
+| `enable_partitionwise_aggregate`                                         | off                            | on
+| `jit`                                                                    | on                             | on
+| `max_slot_wal_keep_size`                                                 | -1                             | 1000
+| `track_wal_io_timing`                                                    | off                            | on
+| `maintenance_io_concurrency`                                             | 10                             | 500
+| `wal_recycle`                                                            | on                             | on
 
 
 <details><summary><b><i>Вывод из сервиса pgconfigurator.cybertec.at</b></i></summary>
