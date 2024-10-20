@@ -221,7 +221,7 @@ wal_recycle = on
 ### Применяем указанные параметры в файле конфигурации и перезапускаем инсанс Postgres
 
 ### Повторяем тест pgbench, получаем следующие результаты
-
+* Тест 14 клиентов, 1 воркер
 ```
 dimon@postgres15-benchmark:~$ sudo -iu postgres
 postgres@postgres15-benchmark:~$ pgbench -c14 -P 60 -T 600 -U postgres test
@@ -251,4 +251,33 @@ latency stddev = 3.902 ms
 initial connection time = 32.584 ms
 tps = 2886.043328 (without initial connection time)
 ```
+* тест 14 клиентов 14 воркеров
 
+```
+postgres@postgres15-benchmark:~$ pgbench -c14 -j 14 -P 60 -T 600 -U postgres test
+pgbench (15.8 (Ubuntu 15.8-1.pgdg24.04+1))
+starting vacuum...end.
+progress: 60.0 s, 4944.0 tps, lat 2.831 ms stddev 2.539, 0 failed
+progress: 120.0 s, 4899.8 tps, lat 2.857 ms stddev 2.493, 0 failed
+progress: 180.0 s, 4843.6 tps, lat 2.890 ms stddev 2.517, 0 failed
+progress: 240.0 s, 4842.0 tps, lat 2.891 ms stddev 2.510, 0 failed
+progress: 300.0 s, 4928.2 tps, lat 2.841 ms stddev 2.489, 0 failed
+progress: 360.0 s, 4873.5 tps, lat 2.872 ms stddev 2.502, 0 failed
+progress: 420.0 s, 4766.4 tps, lat 2.937 ms stddev 2.567, 0 failed
+progress: 480.0 s, 4812.8 tps, lat 2.909 ms stddev 2.559, 0 failed
+progress: 540.0 s, 4816.2 tps, lat 2.907 ms stddev 2.515, 0 failed
+progress: 600.0 s, 4962.2 tps, lat 2.821 ms stddev 2.477, 0 failed
+transaction type: <builtin: TPC-B (sort of)>
+scaling factor: 1
+query mode: simple
+number of clients: 14
+number of threads: 14
+maximum number of tries: 1
+duration: 600 s
+number of transactions actually processed: 2921332
+number of failed transactions: 0 (0.000%)
+latency average = 2.875 ms
+latency stddev = 2.517 ms
+initial connection time = 9.865 ms
+tps = 4868.904876 (without initial connection time)
+```
