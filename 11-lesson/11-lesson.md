@@ -218,3 +218,37 @@ wal_recycle = on
 ```
 </details>
 
+### Применяем указанные параметры в файле конфигурации и перезапускаем инсанс Postgres
+
+### Повторяем тест pgbench, получаем следующие результаты
+
+```
+dimon@postgres15-benchmark:~$ sudo -iu postgres
+postgres@postgres15-benchmark:~$ pgbench -c14 -P 60 -T 600 -U postgres test
+pgbench (15.8 (Ubuntu 15.8-1.pgdg24.04+1))
+starting vacuum...end.
+progress: 60.0 s, 2937.6 tps, lat 4.749 ms stddev 3.786, 0 failed
+progress: 120.0 s, 2946.5 tps, lat 4.738 ms stddev 3.823, 0 failed
+progress: 180.0 s, 2952.2 tps, lat 4.728 ms stddev 3.798, 0 failed
+progress: 240.0 s, 2918.8 tps, lat 4.782 ms stddev 3.871, 0 failed
+progress: 300.0 s, 2918.6 tps, lat 4.783 ms stddev 3.860, 0 failed
+progress: 360.0 s, 2852.0 tps, lat 4.895 ms stddev 3.977, 0 failed
+progress: 420.0 s, 2791.2 tps, lat 5.002 ms stddev 4.087, 0 failed
+progress: 480.0 s, 2816.0 tps, lat 4.957 ms stddev 3.994, 0 failed
+progress: 540.0 s, 2892.6 tps, lat 4.826 ms stddev 3.875, 0 failed
+progress: 600.0 s, 2833.6 tps, lat 4.926 ms stddev 3.938, 0 failed
+transaction type: <builtin: TPC-B (sort of)>
+scaling factor: 1
+query mode: simple
+number of clients: 14
+number of threads: 1
+maximum number of tries: 1
+duration: 600 s
+number of transactions actually processed: 1731561
+number of failed transactions: 0 (0.000%)
+latency average = 4.837 ms
+latency stddev = 3.902 ms
+initial connection time = 32.584 ms
+tps = 2886.043328 (without initial connection time)
+```
+
