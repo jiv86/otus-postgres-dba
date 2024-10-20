@@ -5,7 +5,7 @@
 ### Создаем ВМ на VMWare Workstation
 ВМ будет со следующими параметрами Ubuntu Server 24.04 LTS, 14 vCPU, 72 Гб RAM, 70 Гб NVMe
 
-### Установка Postgres 15
+### Установим Postgres 15
 
 ```
 dimon@postgres15-benchmark:~$ sudo apt-get update
@@ -19,4 +19,9 @@ dimon@postgres15-benchmark:~$ pg_lsclusters
 
 Ver Cluster Port Status Owner    Data directory              Log file
 15  main    5432 online postgres /var/lib/postgresql/15/main /var/log/postgresql/postgresql-15-main.log
+```
+
+### Проводим тест pgbench со стандартными настройками
+
+```
 ```
